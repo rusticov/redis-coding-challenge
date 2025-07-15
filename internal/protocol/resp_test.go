@@ -25,13 +25,31 @@ func TestParseBuffer(t *testing.T) {
 			name:          "complete frame for a simple string",
 			input:         "+message\r\n",
 			expectedData:  protocol.NewSimpleString("message"),
-			expectedBytes: 10,
+			expectedBytes: 7 + 3,
 		},
 		{
 			name:          "complete frame for a simple string with partial of next frame",
 			input:         "+message\r\n+next",
 			expectedData:  protocol.NewSimpleString("message"),
-			expectedBytes: 10,
+			expectedBytes: 7 + 3,
+		},
+		{
+			name:          "partial frame for an error",
+			input:         "-error",
+			expectedData:  nil,
+			expectedBytes: 0,
+		},
+		{
+			name:          "complete frame for an error",
+			input:         "-error\r\n",
+			expectedData:  protocol.NewError("error"),
+			expectedBytes: 5 + 3,
+		},
+		{
+			name:          "complete frame for an error with partial of next frame",
+			input:         "-error\r\n+next",
+			expectedData:  protocol.NewError("error"),
+			expectedBytes: 5 + 3,
 		},
 	}
 

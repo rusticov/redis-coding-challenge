@@ -14,13 +14,27 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 	if delimiterIndex == -1 {
 		return nil, 0
 	}
-	return NewSimpleString(string(bs[1:delimiterIndex])), delimiterIndex + 2
+
+	switch bs[0] {
+	case '-':
+		return NewError(string(bs[1:delimiterIndex])), delimiterIndex + 2
+	default:
+		return NewSimpleString(string(bs[1:delimiterIndex])), delimiterIndex + 2
+	}
 }
 
-type SimpleString struct{}
+type SimpleString string
 
-func NewSimpleString(s string) Data {
-	return nil
+func NewSimpleString(s string) SimpleString {
+	return SimpleString(s)
 }
 
 func (s SimpleString) IsData() {}
+
+type Error string
+
+func NewError(s string) Error {
+	return Error(s)
+}
+
+func (s Error) IsData() {}
