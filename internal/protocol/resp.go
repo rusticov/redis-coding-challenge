@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"bytes"
+	"strconv"
 )
 
 type Data interface {
@@ -15,11 +16,16 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 		return nil, 0
 	}
 
+	text := string(bs[1:delimiterIndex])
+
 	switch bs[0] {
 	case '-':
-		return NewError(string(bs[1:delimiterIndex])), delimiterIndex + 2
+		return NewError(text), delimiterIndex + 2
+	case ':':
+		value, _ := strconv.ParseInt(text, 10, 64)
+		return NewSimpleInteger(value), delimiterIndex + 2
 	default:
-		return NewSimpleString(string(bs[1:delimiterIndex])), delimiterIndex + 2
+		return NewSimpleString(text), delimiterIndex + 2
 	}
 }
 
@@ -38,3 +44,11 @@ func NewError(s string) Error {
 }
 
 func (s Error) IsData() {}
+
+type SimpleInteger int64
+
+func NewSimpleInteger(value int64) SimpleInteger {
+	return SimpleInteger(value)
+}
+
+func (s SimpleInteger) IsData() {}

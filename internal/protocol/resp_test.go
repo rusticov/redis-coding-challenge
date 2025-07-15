@@ -2,6 +2,7 @@ package protocol_test
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"redis-challenge/internal/protocol"
 	"testing"
@@ -50,6 +51,36 @@ func TestParseBuffer(t *testing.T) {
 			input:         "-error\r\n+next",
 			expectedData:  protocol.NewError("error"),
 			expectedBytes: 5 + 3,
+		},
+		{
+			name:          "partial frame for an integer",
+			input:         ":100",
+			expectedData:  nil,
+			expectedBytes: 0,
+		},
+		{
+			name:          "complete frame for an integer",
+			input:         ":100\r\n",
+			expectedData:  protocol.NewSimpleInteger(100),
+			expectedBytes: 3 + 3,
+		},
+		{
+			name:          "complete frame for a maximum positive integer",
+			input:         fmt.Sprintf(":%d\r\n", int64(9223372036854775807)),
+			expectedData:  protocol.NewSimpleInteger(9223372036854775807),
+			expectedBytes: 19 + 3,
+		},
+		{
+			name:          "complete frame for a maximum negative integer",
+			input:         fmt.Sprintf(":%d\r\n", int64(-9223372036854775806)),
+			expectedData:  protocol.NewSimpleInteger(-9223372036854775806),
+			expectedBytes: 20 + 3,
+		},
+		{
+			name:          "complete frame for an integer with partial of next frame",
+			input:         ":100\r\n:99",
+			expectedData:  protocol.NewSimpleInteger(100),
+			expectedBytes: 3 + 3,
 		},
 	}
 
