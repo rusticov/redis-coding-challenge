@@ -123,6 +123,24 @@ func TestParseBuffer(t *testing.T) {
 			expectedData:  protocol.NewSimpleError("value \"1.25\" is not a valid bulk string length"),
 			expectedBytes: 4 + 3,
 		},
+		{
+			name:          "frame for an empty array",
+			input:         "*0\r\n",
+			expectedData:  protocol.NewArray(0),
+			expectedBytes: 1 + 3,
+		},
+		{
+			name:          "partial frame for an array",
+			input:         "*0",
+			expectedData:  nil,
+			expectedBytes: 0,
+		},
+		{
+			name:          "frame with an unknown prefix",
+			input:         "xyz\r\n",
+			expectedData:  protocol.NewSimpleError("unknown protocol symbol \"x\""),
+			expectedBytes: 5,
+		},
 	}
 
 	for _, tt := range tests {

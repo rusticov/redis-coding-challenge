@@ -19,7 +19,9 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 
 	text := string(bs[1:delimiterIndex])
 
-	switch bs[0] {
+	symbol := bs[0]
+
+	switch symbol {
 	case '-':
 		return NewSimpleError(text), delimiterIndex + 2
 	case ':':
@@ -38,8 +40,12 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 			return NewSimpleError(fmt.Sprintf("value \"%s\" is not a valid bulk string length", text)), delimiterIndex + 2
 		}
 		return NewBulkStringStart(value), delimiterIndex + 2
-	default:
+	case '*':
+		return NewArray(0), delimiterIndex + 2
+	case '+':
 		return NewSimpleString(text), delimiterIndex + 2
+	default:
+		return NewSimpleError(fmt.Sprintf("unknown protocol symbol \"%c\"", symbol)), delimiterIndex + 2
 	}
 }
 
@@ -74,3 +80,11 @@ func NewBulkStringStart(length int) BulkStringStart {
 }
 
 func (s BulkStringStart) IsData() {}
+
+type Array int
+
+func NewArray(length int) Array {
+	return Array(length)
+}
+
+func (s Array) IsData() {}
