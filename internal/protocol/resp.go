@@ -29,7 +29,15 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 		}
 		return NewSimpleInteger(value), delimiterIndex + 2
 	case '$':
-		return nil, 5
+		if text == "-1" {
+			return nil, 5
+		}
+
+		value, err := strconv.Atoi(text)
+		if err != nil {
+			return NewSimpleError(fmt.Sprintf("value \"%s\" is not a valid bulk string length", text)), delimiterIndex + 2
+		}
+		return NewBulkStringStart(value), delimiterIndex + 2
 	default:
 		return NewSimpleString(text), delimiterIndex + 2
 	}
@@ -58,3 +66,11 @@ func NewSimpleInteger(value int64) SimpleInteger {
 }
 
 func (s SimpleInteger) IsData() {}
+
+type BulkStringStart int
+
+func NewBulkStringStart(length int) BulkStringStart {
+	return BulkStringStart(length)
+}
+
+func (s BulkStringStart) IsData() {}

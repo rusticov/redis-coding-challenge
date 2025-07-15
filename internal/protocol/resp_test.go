@@ -99,6 +99,30 @@ func TestParseBuffer(t *testing.T) {
 			expectedData:  nil,
 			expectedBytes: 5,
 		},
+		{
+			name:          "frame with partial size of a bulk string",
+			input:         "$10",
+			expectedData:  nil,
+			expectedBytes: 0,
+		},
+		{
+			name:          "frame for a bulk string that is sized",
+			input:         "$10\r\n",
+			expectedData:  protocol.NewBulkStringStart(10),
+			expectedBytes: len("$10\r\n"),
+		},
+		{
+			name:          "frame for a bulk string that is sized and is followed by partial of next frame",
+			input:         "$10\r\nabc",
+			expectedData:  protocol.NewBulkStringStart(10),
+			expectedBytes: len("$10\r\n"),
+		},
+		{
+			name:          "frame for a bulk string cannot have a length that is a floating-point number",
+			input:         "$1.25\r\n",
+			expectedData:  protocol.NewSimpleError("value \"1.25\" is not a valid bulk string length"),
+			expectedBytes: 4 + 3,
+		},
 	}
 
 	for _, tt := range tests {
