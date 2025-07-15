@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestReadSimpleString(t *testing.T) {
+func TestParseBuffer(t *testing.T) {
 
 	tests := []struct {
 		name          string
@@ -16,19 +16,19 @@ func TestReadSimpleString(t *testing.T) {
 		expectedBytes int
 	}{
 		{
-			name:          "partial frame",
+			name:          "partial frame for a simple string",
 			input:         "+mess",
 			expectedData:  nil,
 			expectedBytes: 0,
 		},
 		{
-			name:          "complete frame",
+			name:          "complete frame for a simple string",
 			input:         "+message\r\n",
 			expectedData:  protocol.NewSimpleString("message"),
 			expectedBytes: 10,
 		},
 		{
-			name:          "complete frame with partial of next frame",
+			name:          "complete frame for a simple string with partial of next frame",
 			input:         "+message\r\n+next",
 			expectedData:  protocol.NewSimpleString("message"),
 			expectedBytes: 10,
