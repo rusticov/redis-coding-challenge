@@ -29,7 +29,7 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 		}
 		return NewSimpleInteger(value), delimiterIndex + 2
 	case '$':
-		return Nil{}, 5
+		return nil, 5
 	default:
 		return NewSimpleString(text), delimiterIndex + 2
 	}
@@ -58,7 +58,3 @@ func NewSimpleInteger(value int64) SimpleInteger {
 }
 
 func (s SimpleInteger) IsData() {}
-
-type Nil struct{}
-
-func (s Nil) IsData() {}

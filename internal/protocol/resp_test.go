@@ -96,7 +96,7 @@ func TestParseBuffer(t *testing.T) {
 		{
 			name:          "complete frame for a null string",
 			input:         "$-1\r\n",
-			expectedData:  protocol.Nil{},
+			expectedData:  nil,
 			expectedBytes: 5,
 		},
 	}
