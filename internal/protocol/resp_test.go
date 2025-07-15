@@ -43,13 +43,13 @@ func TestParseBuffer(t *testing.T) {
 		{
 			name:          "complete frame for an error",
 			input:         "-error\r\n",
-			expectedData:  protocol.NewError("error"),
+			expectedData:  protocol.NewSimpleError("error"),
 			expectedBytes: 5 + 3,
 		},
 		{
 			name:          "complete frame for an error with partial of next frame",
 			input:         "-error\r\n+next",
-			expectedData:  protocol.NewError("error"),
+			expectedData:  protocol.NewSimpleError("error"),
 			expectedBytes: 5 + 3,
 		},
 		{

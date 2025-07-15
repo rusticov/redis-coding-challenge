@@ -20,7 +20,7 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 
 	switch bs[0] {
 	case '-':
-		return NewError(text), delimiterIndex + 2
+		return NewSimpleError(text), delimiterIndex + 2
 	case ':':
 		value, _ := strconv.ParseInt(text, 10, 64)
 		return NewSimpleInteger(value), delimiterIndex + 2
@@ -37,13 +37,13 @@ func NewSimpleString(s string) SimpleString {
 
 func (s SimpleString) IsData() {}
 
-type Error string
+type SimpleError string
 
-func NewError(s string) Error {
-	return Error(s)
+func NewSimpleError(s string) SimpleError {
+	return SimpleError(s)
 }
 
-func (s Error) IsData() {}
+func (s SimpleError) IsData() {}
 
 type SimpleInteger int64
 
