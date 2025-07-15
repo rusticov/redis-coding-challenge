@@ -2,6 +2,7 @@ package protocol
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 )
 
@@ -22,7 +23,10 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 	case '-':
 		return NewSimpleError(text), delimiterIndex + 2
 	case ':':
-		value, _ := strconv.ParseInt(text, 10, 64)
+		value, err := strconv.ParseInt(text, 10, 64)
+		if err != nil {
+			return NewSimpleError(fmt.Sprintf("value \"%s\" is not an integer", text)), delimiterIndex + 2
+		}
 		return NewSimpleInteger(value), delimiterIndex + 2
 	case '$':
 		return Nil{}, 5
