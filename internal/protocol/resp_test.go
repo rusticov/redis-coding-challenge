@@ -82,6 +82,12 @@ func TestParseBuffer(t *testing.T) {
 			expectedData:  protocol.NewSimpleInteger(100),
 			expectedBytes: 3 + 3,
 		},
+		{
+			name:          "complete frame for a null string",
+			input:         "$-1\r\n",
+			expectedData:  protocol.Nil{},
+			expectedBytes: 5,
+		},
 	}
 
 	for _, tt := range tests {
