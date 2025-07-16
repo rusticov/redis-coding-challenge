@@ -21,38 +21,44 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 
 	symbol := bs[0]
 
+	frameSize := delimiterIndex + 2
+
 	switch symbol {
 	case '-':
-		return NewSimpleError(text), delimiterIndex + 2
+		return NewSimpleError(text), frameSize
 	case ':':
 		value, err := strconv.ParseInt(text, 10, 64)
 		if err != nil {
-			return NewSimpleError(fmt.Sprintf("value \"%s\" is not an integer", text)), delimiterIndex + 2
+			return NewSimpleError(fmt.Sprintf("value \"%s\" is not an integer", text)), frameSize
 		}
-		return NewSimpleInteger(value), delimiterIndex + 2
+		return NewSimpleInteger(value), frameSize
 	case '$':
 		if text == "-1" {
 			return nil, 5
 		}
 
-		value, err := strconv.Atoi(text)
+		length, err := strconv.Atoi(text)
 		if err != nil {
-			return NewSimpleError(fmt.Sprintf("value \"%s\" is not a valid bulk string length", text)), delimiterIndex + 2
+			return NewSimpleError(fmt.Sprintf("value \"%s\" is not a valid bulk string length", text)), frameSize
 		}
-		return NewBulkStringStart(value), delimiterIndex + 2
+
+		if frameSize+length+2 <= len(bs) {
+			return NewBulkString(string(bs[frameSize : frameSize+length])), frameSize + length + 2
+		}
+		return nil, 0
 	case '*':
-		return NewArray(0), delimiterIndex + 2
+		return NewArray(0), frameSize
 	case '+':
-		return NewSimpleString(text), delimiterIndex + 2
+		return NewSimpleString(text), frameSize
 	default:
-		return NewSimpleError(fmt.Sprintf("unknown protocol symbol \"%c\"", symbol)), delimiterIndex + 2
+		return NewSimpleError(fmt.Sprintf("unknown protocol symbol \"%c\"", symbol)), frameSize
 	}
 }
 
 type SimpleString string
 
-func NewSimpleString(s string) SimpleString {
-	return SimpleString(s)
+func NewSimpleString(text string) SimpleString {
+	return SimpleString(text)
 }
 
 func (s SimpleString) IsData() {}
@@ -73,13 +79,13 @@ func NewSimpleInteger(value int64) SimpleInteger {
 
 func (s SimpleInteger) IsData() {}
 
-type BulkStringStart int
+type BulkString string
 
-func NewBulkStringStart(length int) BulkStringStart {
-	return BulkStringStart(length)
+func NewBulkString(text string) BulkString {
+	return BulkString(text)
 }
 
-func (s BulkStringStart) IsData() {}
+func (s BulkString) IsData() {}
 
 type Array int
 

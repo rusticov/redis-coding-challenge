@@ -3,6 +3,7 @@ package protocol_test
 import (
 	"bytes"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"redis-challenge/internal/protocol"
 	"testing"
 )
@@ -108,14 +109,32 @@ func TestParseBuffer(t *testing.T) {
 		{
 			name:          "frame for a bulk string that is sized",
 			input:         "$10\r\n",
-			expectedData:  protocol.NewBulkStringStart(10),
-			expectedBytes: len("$10\r\n"),
+			expectedData:  nil,
+			expectedBytes: 0,
 		},
 		{
-			name:          "frame for a bulk string that is sized and is followed by partial of next frame",
+			name:          "frame for a bulk string that is sized and is followed by partial of string",
 			input:         "$10\r\nabc",
-			expectedData:  protocol.NewBulkStringStart(10),
-			expectedBytes: len("$10\r\n"),
+			expectedData:  nil,
+			expectedBytes: 0,
+		},
+		{
+			name:          "frame for a bulk string that is sized and is followed by unterminated string of expected length",
+			input:         "$10\r\n1234567890",
+			expectedData:  nil,
+			expectedBytes: 0,
+		},
+		{
+			name:          "frame for a bulk string that is sized and is followed by terminated string of expected length",
+			input:         "$10\r\n1234567890\r\n",
+			expectedData:  protocol.NewBulkString("1234567890"),
+			expectedBytes: len("$10\r\n1234567890\r\n"),
+		},
+		{
+			name:          "frame for a bulk string that is sized with complete bulk string text and followed by a partial frame",
+			input:         "$3\r\nabc\r\n$10",
+			expectedData:  protocol.NewBulkString("abc"),
+			expectedBytes: len("$3\r\nabc\r\n"),
 		},
 		{
 			name:          "frame for a bulk string cannot have a length that is a floating-point number",
@@ -150,7 +169,7 @@ func TestParseBuffer(t *testing.T) {
 
 			data, byteCount := protocol.ReadFrame(&buffer)
 
-			assert.Equal(t, tt.expectedData, data)
+			require.Equal(t, tt.expectedData, data)
 			assert.Equal(t, tt.expectedBytes, byteCount)
 		})
 	}
