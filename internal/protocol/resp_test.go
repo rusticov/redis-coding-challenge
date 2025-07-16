@@ -182,6 +182,12 @@ func TestParseBuffer(t *testing.T) {
 			expectedBytes: len("*2\r\n:10\r\n+text\r\n"),
 		},
 		{
+			name:          "complete frame for an array of size 2 followed by only 1 complete frame",
+			input:         "*2\r\n:10\r\n",
+			expectedData:  nil,
+			expectedBytes: 0,
+		},
+		{
 			name:          "frame with an unknown prefix",
 			input:         "xyz\r\n",
 			expectedData:  protocol.NewSimpleError("unknown protocol symbol \"x\""),
