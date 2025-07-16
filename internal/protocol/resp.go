@@ -23,11 +23,7 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 	case '-':
 		return NewSimpleError(text), frameSize
 	case ':':
-		value, err := strconv.ParseInt(text, 10, 64)
-		if err != nil {
-			return NewSimpleError(fmt.Sprintf("value \"%s\" is not an integer", text)), frameSize
-		}
-		return NewSimpleInteger(value), frameSize
+		return parseSimpleInteger(text, frameSize)
 	case '$':
 		if text == "-1" {
 			return nil, 5
@@ -49,4 +45,12 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 	default:
 		return NewSimpleError(fmt.Sprintf("unknown protocol symbol \"%c\"", symbol)), frameSize
 	}
+}
+
+func parseSimpleInteger(text string, frameSize int) (Data, int) {
+	value, err := strconv.ParseInt(text, 10, 64)
+	if err != nil {
+		return NewSimpleError(fmt.Sprintf("value \"%s\" is not an integer", text)), frameSize
+	}
+	return NewSimpleInteger(value), frameSize
 }
