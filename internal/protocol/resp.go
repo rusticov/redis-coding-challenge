@@ -31,24 +31,7 @@ func readFrameWithOffset(b *bytes.Buffer, offset int) (Data, int) {
 	case '$':
 		return parseBulkString(text, frameSize, bs)
 	case '*':
-		length, _ := strconv.Atoi(text)
-
-		if length == 0 {
-			return NewArray(nil), frameSize
-		}
-
-		data := make([]Data, length)
-		for i := range length {
-			datum, datumSize := readFrameWithOffset(b, frameSize)
-
-			if datum == nil {
-				return nil, 0
-			}
-
-			data[i] = datum
-			frameSize += datumSize
-		}
-		return NewArray(data), frameSize
+		return parseArray(b, text, frameSize)
 	case '+':
 		return NewSimpleString(text), frameSize
 	default:
@@ -78,4 +61,25 @@ func parseBulkString(text string, frameSize int, bs []byte) (Data, int) {
 		return NewBulkString(string(bs[frameSize : frameSize+length])), frameSize + length + 2
 	}
 	return nil, 0
+}
+
+func parseArray(b *bytes.Buffer, text string, frameSize int) (Data, int) {
+	length, _ := strconv.Atoi(text)
+
+	if length == 0 {
+		return NewArray(nil), frameSize
+	}
+
+	data := make([]Data, length)
+	for i := range length {
+		datum, datumSize := readFrameWithOffset(b, frameSize)
+
+		if datum == nil {
+			return nil, 0
+		}
+
+		data[i] = datum
+		frameSize += datumSize
+	}
+	return NewArray(data), frameSize
 }
