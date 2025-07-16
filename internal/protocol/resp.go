@@ -32,15 +32,20 @@ func readFrameWithOffset(b *bytes.Buffer, offset int) (Data, int) {
 		return parseBulkString(text, frameSize, bs)
 	case '*':
 		length, _ := strconv.Atoi(text)
-		var data []Data
-		if length == 1 {
+
+		if length == 0 {
+			return NewArray(nil), frameSize
+		}
+
+		data := make([]Data, length)
+		for i := range length {
 			datum, datumSize := readFrameWithOffset(b, frameSize)
 
 			if datum == nil {
 				return nil, 0
 			}
 
-			data = append(data, datum)
+			data[i] = datum
 			frameSize += datumSize
 		}
 		return NewArray(data), frameSize
