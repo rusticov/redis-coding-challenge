@@ -6,10 +6,6 @@ import (
 	"strconv"
 )
 
-type Data interface {
-	IsData()
-}
-
 func ReadFrame(b *bytes.Buffer) (Data, int) {
 	bs := b.Bytes()
 	delimiterIndex := bytes.Index(bs, []byte("\r\n"))
@@ -54,43 +50,3 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 		return NewSimpleError(fmt.Sprintf("unknown protocol symbol \"%c\"", symbol)), frameSize
 	}
 }
-
-type SimpleString string
-
-func NewSimpleString(text string) SimpleString {
-	return SimpleString(text)
-}
-
-func (s SimpleString) IsData() {}
-
-type SimpleError string
-
-func NewSimpleError(s string) SimpleError {
-	return SimpleError(s)
-}
-
-func (s SimpleError) IsData() {}
-
-type SimpleInteger int64
-
-func NewSimpleInteger(value int64) SimpleInteger {
-	return SimpleInteger(value)
-}
-
-func (s SimpleInteger) IsData() {}
-
-type BulkString string
-
-func NewBulkString(text string) BulkString {
-	return BulkString(text)
-}
-
-func (s BulkString) IsData() {}
-
-type Array int
-
-func NewArray(length int) Array {
-	return Array(length)
-}
-
-func (s Array) IsData() {}
