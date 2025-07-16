@@ -25,19 +25,7 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 	case ':':
 		return parseSimpleInteger(text, frameSize)
 	case '$':
-		if text == "-1" {
-			return nil, 5
-		}
-
-		length, err := strconv.Atoi(text)
-		if err != nil {
-			return NewSimpleError(fmt.Sprintf("value \"%s\" is not a valid bulk string length", text)), frameSize
-		}
-
-		if frameSize+length+2 <= len(bs) {
-			return NewBulkString(string(bs[frameSize : frameSize+length])), frameSize + length + 2
-		}
-		return nil, 0
+		return parseBulkString(text, frameSize, bs)
 	case '*':
 		return NewArray(0), frameSize
 	case '+':
@@ -53,4 +41,20 @@ func parseSimpleInteger(text string, frameSize int) (Data, int) {
 		return NewSimpleError(fmt.Sprintf("value \"%s\" is not an integer", text)), frameSize
 	}
 	return NewSimpleInteger(value), frameSize
+}
+
+func parseBulkString(text string, frameSize int, bs []byte) (Data, int) {
+	if text == "-1" {
+		return nil, 5
+	}
+
+	length, err := strconv.Atoi(text)
+	if err != nil {
+		return NewSimpleError(fmt.Sprintf("value \"%s\" is not a valid bulk string length", text)), frameSize
+	}
+
+	if frameSize+length+2 <= len(bs) {
+		return NewBulkString(string(bs[frameSize : frameSize+length])), frameSize + length + 2
+	}
+	return nil, 0
 }
