@@ -10,36 +10,18 @@ import (
 
 func TestWritingData(t *testing.T) {
 
-	tests := []struct {
-		name    string
-		message string
-	}{
-		{
-			name:    "simple string",
-			message: "+message\r\n",
-		},
-		{
-			name:    "simple error",
-			message: "-simple error message\r\n",
-		},
-		{
-			name:    "simple integer",
-			message: ":42\r\n",
-		},
-		{
-			name:    "bulk string",
-			message: "$5\r\nabcde\r\n",
-		},
-		{
-			name:    "array",
-			message: "*2\r\n+abcde\r\n:42\r\n",
-		},
+	tests := map[string]string{
+		"simple string":  "+message\r\n",
+		"simple error":   "-simple error message\r\n",
+		"simple integer": ":42\r\n",
+		"bulk string":    "$5\r\nabcde\r\n",
+		"array":          "*2\r\n+abcde\r\n:42\r\n",
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for testName, message := range tests {
+		t.Run(testName, func(t *testing.T) {
 			var buffer bytes.Buffer
-			buffer.WriteString(tt.message)
+			buffer.WriteString(message)
 
 			data, _ := protocol.ReadFrame(&buffer)
 
@@ -47,7 +29,7 @@ func TestWritingData(t *testing.T) {
 			err := protocol.WriteData(&outBuffer, data)
 			require.NoError(t, err)
 
-			assert.Equal(t, tt.message, outBuffer.String())
+			assert.Equal(t, message, outBuffer.String())
 		})
 	}
 }
