@@ -7,7 +7,11 @@ import (
 )
 
 func ReadFrame(b *bytes.Buffer) (Data, int) {
-	bs := b.Bytes()
+	return readFrameWithOffset(b, 0)
+}
+
+func readFrameWithOffset(b *bytes.Buffer, offset int) (Data, int) {
+	bs := b.Bytes()[offset:]
 	delimiterIndex := bytes.Index(bs, []byte("\r\n"))
 	if delimiterIndex == -1 {
 		return nil, 0
@@ -27,7 +31,19 @@ func ReadFrame(b *bytes.Buffer) (Data, int) {
 	case '$':
 		return parseBulkString(text, frameSize, bs)
 	case '*':
-		return NewArray(0), frameSize
+		length, _ := strconv.Atoi(text)
+		var data []Data
+		if length == 1 {
+			datum, datumSize := readFrameWithOffset(b, frameSize)
+
+			if datum == nil {
+				return nil, 0
+			}
+
+			data = append(data, datum)
+			frameSize += datumSize
+		}
+		return NewArray(data), frameSize
 	case '+':
 		return NewSimpleString(text), frameSize
 	default:

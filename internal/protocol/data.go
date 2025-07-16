@@ -36,10 +36,12 @@ func NewBulkString(text string) BulkString {
 
 func (s BulkString) IsData() {}
 
-type Array int
+type Array struct {
+	Data []Data
+}
 
-func NewArray(length int) Array {
-	return Array(length)
+func NewArray(data []Data) Array {
+	return Array{Data: data}
 }
 
 func (s Array) IsData() {}

@@ -145,7 +145,7 @@ func TestParseBuffer(t *testing.T) {
 		{
 			name:          "frame for an empty array",
 			input:         "*0\r\n",
-			expectedData:  protocol.NewArray(0),
+			expectedData:  protocol.NewArray(nil),
 			expectedBytes: 1 + 3,
 		},
 		{
@@ -153,6 +153,18 @@ func TestParseBuffer(t *testing.T) {
 			input:         "*0",
 			expectedData:  nil,
 			expectedBytes: 0,
+		},
+		{
+			name:          "complete frame for an array of size 1 with partial of next frame",
+			input:         "*1\r\n:10",
+			expectedData:  nil,
+			expectedBytes: 0,
+		},
+		{
+			name:          "complete frame for an array of size 1 followed by completed simple integer frame",
+			input:         "*1\r\n:10\r\n",
+			expectedData:  protocol.NewArray([]protocol.Data{protocol.NewSimpleInteger(10)}),
+			expectedBytes: len("*1\r\n:10\r\n"),
 		},
 		{
 			name:          "frame with an unknown prefix",
