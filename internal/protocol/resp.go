@@ -42,7 +42,7 @@ func readFrameWithOffset(b *bytes.Buffer, offset int) (Data, int) {
 func parseSimpleInteger(text string, frameSize int) (Data, int) {
 	value, err := strconv.ParseInt(text, 10, 64)
 	if err != nil {
-		return NewSimpleError(fmt.Sprintf("value \"%s\" is not an integer", text)), frameSize
+		return NewSimpleError(fmt.Sprintf("value \"%s\" is not a 64-bit integer", text)), frameSize
 	}
 	return NewSimpleInteger(value), frameSize
 }
@@ -80,6 +80,10 @@ func parseArray(b *bytes.Buffer, text string, frameSize int) (Data, int) {
 
 		data[i] = datum
 		frameSize += datumSize
+
+		if errorData, ok := datum.(SimpleError); ok {
+			return errorData, frameSize
+		}
 	}
 	return NewArray(data), frameSize
 }

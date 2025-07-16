@@ -79,13 +79,13 @@ func TestParseBuffer(t *testing.T) {
 		{
 			name:          "complete frame for an integer that is a floating-point number",
 			input:         ":1.25\r\n",
-			expectedData:  protocol.NewSimpleError("value \"1.25\" is not an integer"),
+			expectedData:  protocol.NewSimpleError("value \"1.25\" is not a 64-bit integer"),
 			expectedBytes: 4 + 3,
 		},
 		{
 			name:          "complete frame for an integer that is too big",
 			input:         ":9223372036854775808\r\n",
-			expectedData:  protocol.NewSimpleError("value \"9223372036854775808\" is not an integer"),
+			expectedData:  protocol.NewSimpleError("value \"9223372036854775808\" is not a 64-bit integer"),
 			expectedBytes: len(":9223372036854775808\r\n"),
 		},
 		{
@@ -186,6 +186,12 @@ func TestParseBuffer(t *testing.T) {
 			input:         "*2\r\n:10\r\n",
 			expectedData:  nil,
 			expectedBytes: 0,
+		},
+		{
+			name:          "complete frame for an array of size 1 followed by an invalid completed simple integer frame",
+			input:         "*1\r\n:not-a-number\r\n",
+			expectedData:  protocol.NewSimpleError("value \"not-a-number\" is not a 64-bit integer"),
+			expectedBytes: len("*1\r\n:not-a-number\r\n"),
 		},
 		{
 			name:          "frame with an unknown prefix",
