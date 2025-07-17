@@ -14,8 +14,7 @@ func TestPingServer(t *testing.T) {
 	timeout := 10 * time.Millisecond
 
 	t.Run("send ping without message and receive PONG", func(t *testing.T) {
-		testServer, err := server.NewServer()
-		require.NoError(t, err)
+		testServer := createTestServer(t)
 
 		connection, err := net.DialTimeout("tcp", testServer.Address(), timeout)
 		require.NoError(t, err)
@@ -31,4 +30,11 @@ func TestPingServer(t *testing.T) {
 		response := string(buffer[:n])
 		assert.Equal(t, "+PONG\r\n", response)
 	})
+}
+
+func createTestServer(t testing.TB) server.Server {
+	testServer, err := server.NewRealRedisServer()
+	require.NoError(t, err)
+
+	return testServer
 }

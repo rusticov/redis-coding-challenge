@@ -1,11 +1,18 @@
 package server
 
-type Server struct{}
+// Server represents a running instance of a Redis-compliant server.
+type Server interface {
+	Address() string
+}
 
-func (s *Server) Address() string {
+// RealRedisServer exists to running to a real running Redis server for comparison with the one written for this challenge.
+type RealRedisServer struct{}
+
+func (s *RealRedisServer) Address() string {
 	return ":6379"
 }
 
-func NewServer() (*Server, error) {
-	return nil, nil
+// NewRealRedisServer initializes and returns a new instance of RealRedisServer, representing a real Redis server.
+func NewRealRedisServer() (Server, error) {
+	return &RealRedisServer{}, nil
 }
