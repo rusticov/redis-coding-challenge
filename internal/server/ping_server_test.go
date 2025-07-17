@@ -15,6 +15,7 @@ func TestPingServer(t *testing.T) {
 
 	t.Run("send ping without message and receive PONG", func(t *testing.T) {
 		testServer := createTestServer(t)
+		defer testServer.Close()
 
 		connection, err := net.DialTimeout("tcp", testServer.Address(), timeout)
 		require.NoError(t, err)
@@ -32,9 +33,25 @@ func TestPingServer(t *testing.T) {
 	})
 }
 
-func createTestServer(t testing.TB) server.Server {
-	testServer, err := server.NewRealRedisServer()
-	require.NoError(t, err)
+type ServerVariant string
 
-	return testServer
+const (
+	RealRedisServer ServerVariant = "real redis server"
+	ChallengeServer ServerVariant = "challenge server"
+)
+
+func createTestServer(t testing.TB, variant ...ServerVariant) server.Server {
+	activeVariant := ChallengeServer
+	if len(variant) > 0 {
+		activeVariant = variant[0]
+	}
+
+	switch activeVariant {
+	case RealRedisServer:
+		return server.NewRealRedisServer()
+	default:
+		challengeServer, err := server.NewChallengeServer()
+		require.NoError(t, err)
+		return challengeServer
+	}
 }

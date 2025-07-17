@@ -1,0 +1,40 @@
+package server
+
+import (
+	"log/slog"
+	"net"
+)
+
+type ChallengeServer struct {
+	socket net.Listener
+}
+
+func (c *ChallengeServer) Address() string {
+	return c.socket.Addr().String()
+}
+
+func (c *ChallengeServer) Close() error {
+	return c.socket.Close()
+}
+
+func NewChallengeServer() (Server, error) {
+	socket, err := net.Listen("tcp", ":0")
+	if err != nil {
+		return nil, err
+	}
+
+	go func() {
+		for {
+			connection, err := socket.Accept()
+			if err != nil {
+				slog.Error("failed to accept connection", "error", err)
+				continue
+			}
+			_ = connection
+
+			connection.Write([]byte("+PONG\r\n"))
+		}
+	}()
+
+	return &ChallengeServer{socket: socket}, nil
+}
