@@ -30,11 +30,18 @@ func NewChallengeServer() (Server, error) {
 				slog.Error("failed to accept connection", "error", err)
 				continue
 			}
-			_ = connection
 
-			connection.Write([]byte("+PONG\r\n"))
+			go func() {
+				commandHandler(connection)
+			}()
 		}
 	}()
 
 	return &ChallengeServer{socket: socket}, nil
+}
+
+func commandHandler(connection net.Conn) {
+	defer connection.Close()
+
+	connection.Write([]byte("+PONG\r\n"))
 }
