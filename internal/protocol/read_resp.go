@@ -6,12 +6,7 @@ import (
 	"strconv"
 )
 
-func ReadFrame(b *bytes.Buffer) (Data, int) {
-	return readFrameWithOffset(b, 0)
-}
-
-func readFrameWithOffset(b *bytes.Buffer, offset int) (Data, int) {
-	bs := b.Bytes()[offset:]
+func ReadFrame(bs []byte) (Data, int) {
 	delimiterIndex := bytes.Index(bs, []byte("\r\n"))
 	if delimiterIndex == -1 {
 		return nil, 0
@@ -31,7 +26,7 @@ func readFrameWithOffset(b *bytes.Buffer, offset int) (Data, int) {
 	case '$':
 		return parseBulkString(text, frameSize, bs)
 	case '*':
-		return parseArray(b, text, frameSize)
+		return parseArray(bs, text, frameSize)
 	case '+':
 		return NewSimpleString(text), frameSize
 	default:
@@ -63,7 +58,7 @@ func parseBulkString(text string, frameSize int, bs []byte) (Data, int) {
 	return nil, 0
 }
 
-func parseArray(b *bytes.Buffer, text string, frameSize int) (Data, int) {
+func parseArray(bs []byte, text string, frameSize int) (Data, int) {
 	length, _ := strconv.Atoi(text)
 
 	if length == 0 {
@@ -72,7 +67,7 @@ func parseArray(b *bytes.Buffer, text string, frameSize int) (Data, int) {
 
 	data := make([]Data, length)
 	for i := range length {
-		datum, datumSize := readFrameWithOffset(b, frameSize)
+		datum, datumSize := ReadFrame(bs[frameSize:])
 
 		if datum == nil {
 			return nil, 0

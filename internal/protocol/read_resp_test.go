@@ -176,7 +176,7 @@ func TestParseBuffer(t *testing.T) {
 			var buffer bytes.Buffer
 			buffer.WriteString(tt.input)
 
-			data, byteCount := protocol.ReadFrame(&buffer)
+			data, byteCount := protocol.ReadFrame(buffer.Bytes())
 
 			require.Equal(t, tt.expectedData, data)
 			assert.Equal(t, tt.expectedBytes, byteCount)

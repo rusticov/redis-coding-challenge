@@ -23,7 +23,7 @@ func TestWritingData(t *testing.T) {
 			var buffer bytes.Buffer
 			buffer.WriteString(message)
 
-			data, _ := protocol.ReadFrame(&buffer)
+			data, _ := protocol.ReadFrame(buffer.Bytes())
 
 			var outBuffer bytes.Buffer
 			err := protocol.WriteData(&outBuffer, data)
