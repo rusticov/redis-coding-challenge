@@ -1,7 +1,6 @@
 package command
 
 import (
-	"fmt"
 	"redis-challenge/internal/protocol"
 )
 
@@ -10,10 +9,10 @@ type Data struct {
 	Arguments []protocol.Data
 }
 
-func FromData(data protocol.Data) (Data, error) {
+func FromData(data protocol.Data) (Data, protocol.Data) {
 	if array, ok := data.(protocol.Array); ok {
 		if len(array.Data) == 0 {
-			return Data{}, fmt.Errorf("missing command name")
+			return Data{}, protocol.NewSimpleError("missing command name")
 		}
 
 		if name, ok := array.Data[0].(protocol.BulkString); ok {
@@ -23,7 +22,12 @@ func FromData(data protocol.Data) (Data, error) {
 			}, nil
 		}
 
-		return Data{}, fmt.Errorf("command name must be a bulk string")
+		return Data{}, protocol.NewSimpleError("command name must be a bulk string")
 	}
-	return Data{}, fmt.Errorf("not a command")
+
+	if simpleError, ok := data.(protocol.SimpleError); ok {
+		return Data{}, simpleError
+	}
+
+	return Data{}, protocol.NewSimpleError("not a command")
 }

@@ -16,7 +16,7 @@ func TestReadingCommands(t *testing.T) {
 		}}
 
 		commandData, err := command.FromData(data)
-		require.NoError(t, err)
+		require.Nil(t, err, "should be no error")
 
 		assert.Equal(t, "PING", commandData.Name)
 		assert.Empty(t, commandData.Arguments)
@@ -29,7 +29,7 @@ func TestReadingCommands(t *testing.T) {
 		}}
 
 		commandData, err := command.FromData(data)
-		require.NoError(t, err)
+		require.Nil(t, err, "should be no error")
 
 		assert.Equal(t, "PING", commandData.Name)
 		assert.Equal(t, []protocol.Data{
@@ -44,7 +44,7 @@ func TestReadingCommands(t *testing.T) {
 		}}
 
 		commandData, err := command.FromData(data)
-		require.NoError(t, err)
+		require.Nil(t, err, "should be no error")
 
 		assert.Equal(t, "ECHO", commandData.Name)
 		assert.Equal(t, []protocol.Data{
@@ -56,7 +56,7 @@ func TestReadingCommands(t *testing.T) {
 		data := protocol.Array{}
 
 		_, err := command.FromData(data)
-		require.EqualError(t, err, "missing command name")
+		assert.Equal(t, protocol.NewSimpleError("missing command name"), err)
 	})
 
 	t.Run("data whose name is not a bulk string should error", func(t *testing.T) {
@@ -65,13 +65,20 @@ func TestReadingCommands(t *testing.T) {
 		}}
 
 		_, err := command.FromData(data)
-		require.EqualError(t, err, "command name must be a bulk string")
+		assert.Equal(t, protocol.NewSimpleError("command name must be a bulk string"), err)
 	})
 
 	t.Run("data is not an array should error", func(t *testing.T) {
 		data := protocol.NewBulkString("PING")
 
 		_, err := command.FromData(data)
-		require.EqualError(t, err, "not a command")
+		assert.Equal(t, protocol.NewSimpleError("not a command"), err)
+	})
+
+	t.Run("data is an error should be returned as the error", func(t *testing.T) {
+		data := protocol.NewSimpleError("I am an error")
+
+		_, err := command.FromData(data)
+		assert.Equal(t, protocol.NewSimpleError("I am an error"), err)
 	})
 }
