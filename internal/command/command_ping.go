@@ -5,7 +5,10 @@ import (
 	"redis-challenge/internal/protocol"
 )
 
-func ExecutePingCommand(writer io.Writer, data Data) error {
+type PingCommand struct {
+}
+
+func (PingCommand) Execute(writer io.Writer, data Data) error {
 	if len(data.Arguments) == 0 {
 		_, err := writer.Write([]byte("+PONG\r\n"))
 		return err

@@ -68,5 +68,5 @@ func connectionHandler(connection net.Conn) {
 	protocolData, _ := protocol.ReadFrame(buffer[:n])
 	data, _ := command.FromData(protocolData) // TODO respond with error data
 
-	command.ExecutePingCommand(connection, data) // TODO handle error
+	command.Registry{}.Execute(connection, data) // TODO handle error
 }

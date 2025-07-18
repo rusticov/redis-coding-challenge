@@ -16,6 +16,7 @@ func TestPingServer(t *testing.T) {
 	tests := map[string]struct {
 		command          string
 		expectedResponse string
+		variant          ServerVariant
 	}{
 		"send ping without message and receive PONG": {
 			command:          "*1\r\n$4\r\nPING\r\n",
@@ -25,11 +26,15 @@ func TestPingServer(t *testing.T) {
 			command:          "*2\r\n$4\r\nPING\r\n$11\r\nthe message\r\n",
 			expectedResponse: "$11\r\nthe message\r\n",
 		},
+		"send echo with message should receive message back in reply": {
+			command:          "*2\r\n$4\r\nECHO\r\n$12\r\necho message\r\n",
+			expectedResponse: "$12\r\necho message\r\n",
+		},
 	}
 
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			testServer := createTestServer(t)
+			testServer := createTestServer(t, test.variant)
 			defer testServer.Close()
 
 			connection, err := net.DialTimeout("tcp", testServer.Address(), timeout)
@@ -47,13 +52,32 @@ func TestPingServer(t *testing.T) {
 			assert.Equal(t, test.expectedResponse, response)
 		})
 	}
+
+	t.Run("send bad command should receive error message", func(t *testing.T) {
+		testServer := createTestServer(t)
+		defer testServer.Close()
+
+		connection, err := net.DialTimeout("tcp", testServer.Address(), timeout)
+		require.NoError(t, err)
+		defer connection.Close()
+
+		_, err = connection.Write([]byte("*2\r\n$3\r\nBAD\r\n$3\r\narg\r\n"))
+		require.NoError(t, err)
+
+		buffer := make([]byte, 256)
+		n, err := connection.Read(buffer)
+		assert.NoError(t, err)
+
+		response := string(buffer[:n])
+		assert.Contains(t, "-ERR unknown command 'BAD'\r\n", response)
+	})
 }
 
 type ServerVariant string
 
 const (
 	RealRedisServer ServerVariant = "real redis server"
-	ChallengeServer ServerVariant = "challenge server"
+	ChallengeServer ServerVariant = ""
 )
 
 func createTestServer(t testing.TB, variant ...ServerVariant) server.Server {
