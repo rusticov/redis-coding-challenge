@@ -68,9 +68,5 @@ func connectionHandler(connection net.Conn) {
 	protocolData, _ := protocol.ReadFrame(buffer[:n])
 	data, _ := command.FromData(protocolData) // TODO respond with error data
 
-	if len(data.Arguments) == 0 {
-		connection.Write([]byte("+PONG\r\n"))
-	} else {
-		protocol.WriteData(connection, data.Arguments[0])
-	}
+	command.ExecutePingCommand(connection, data) // TODO handle error
 }
