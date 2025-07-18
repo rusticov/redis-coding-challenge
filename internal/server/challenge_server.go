@@ -3,6 +3,8 @@ package server
 import (
 	"log/slog"
 	"net"
+	"redis-challenge/internal/command"
+	"redis-challenge/internal/protocol"
 )
 
 type ChallengeServer struct {
@@ -43,5 +45,19 @@ func NewChallengeServer() (Server, error) {
 func connectionHandler(connection net.Conn) {
 	defer connection.Close()
 
-	connection.Write([]byte("+PONG\r\n"))
+	buffer := make([]byte, 1024)
+	n, err := connection.Read(buffer)
+	if err != nil {
+		// TODO return error message
+		return
+	}
+
+	protocolData, _ := protocol.ReadFrame(buffer[:n])
+	data, _ := command.FromData(protocolData) // TODO respond with error data
+
+	if len(data.Arguments) == 0 {
+		connection.Write([]byte("+PONG\r\n"))
+	} else {
+		protocol.WriteData(connection, data.Arguments[0])
+	}
 }

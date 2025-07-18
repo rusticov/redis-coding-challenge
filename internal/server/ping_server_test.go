@@ -33,7 +33,7 @@ func TestPingServer(t *testing.T) {
 	})
 
 	t.Run("send ping with message should receive message back in reply", func(t *testing.T) {
-		testServer := createTestServer(t, RealRedisServer)
+		testServer := createTestServer(t)
 		defer testServer.Close()
 
 		connection, err := net.DialTimeout("tcp", testServer.Address(), timeout)
