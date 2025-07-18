@@ -13,43 +13,40 @@ func TestPingServer(t *testing.T) {
 
 	timeout := 100 * time.Millisecond
 
-	t.Run("send ping without message and receive PONG", func(t *testing.T) {
-		testServer := createTestServer(t)
-		defer testServer.Close()
+	tests := map[string]struct {
+		command          string
+		expectedResponse string
+	}{
+		"send ping without message and receive PONG": {
+			command:          "*1\r\n$4\r\nPING\r\n",
+			expectedResponse: "+PONG\r\n",
+		},
+		"send ping with message should receive message back in reply": {
+			command:          "*2\r\n$4\r\nPING\r\n$11\r\nthe message\r\n",
+			expectedResponse: "$11\r\nthe message\r\n",
+		},
+	}
 
-		connection, err := net.DialTimeout("tcp", testServer.Address(), timeout)
-		require.NoError(t, err)
-		defer connection.Close()
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			testServer := createTestServer(t)
+			defer testServer.Close()
 
-		_, err = connection.Write([]byte("*1\r\n$4\r\nPING\r\n"))
-		require.NoError(t, err)
+			connection, err := net.DialTimeout("tcp", testServer.Address(), timeout)
+			require.NoError(t, err)
+			defer connection.Close()
 
-		buffer := make([]byte, 256)
-		n, err := connection.Read(buffer)
-		assert.NoError(t, err)
+			_, err = connection.Write([]byte(test.command))
+			require.NoError(t, err)
 
-		response := string(buffer[:n])
-		assert.Equal(t, "+PONG\r\n", response)
-	})
+			buffer := make([]byte, 256)
+			n, err := connection.Read(buffer)
+			assert.NoError(t, err)
 
-	t.Run("send ping with message should receive message back in reply", func(t *testing.T) {
-		testServer := createTestServer(t)
-		defer testServer.Close()
-
-		connection, err := net.DialTimeout("tcp", testServer.Address(), timeout)
-		require.NoError(t, err)
-		defer connection.Close()
-
-		_, err = connection.Write([]byte("*2\r\n$4\r\nPING\r\n$11\r\nthe message\r\n"))
-		require.NoError(t, err)
-
-		buffer := make([]byte, 256)
-		n, err := connection.Read(buffer)
-		assert.NoError(t, err)
-
-		response := string(buffer[:n])
-		assert.Equal(t, "$11\r\nthe message\r\n", response)
-	})
+			response := string(buffer[:n])
+			assert.Equal(t, test.expectedResponse, response)
+		})
+	}
 }
 
 type ServerVariant string
