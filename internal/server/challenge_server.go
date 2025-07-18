@@ -32,7 +32,7 @@ func NewChallengeServer() (Server, error) {
 			}
 
 			go func() {
-				commandHandler(connection)
+				connectionHandler(connection)
 			}()
 		}
 	}()
@@ -40,7 +40,7 @@ func NewChallengeServer() (Server, error) {
 	return &ChallengeServer{socket: socket}, nil
 }
 
-func commandHandler(connection net.Conn) {
+func connectionHandler(connection net.Conn) {
 	defer connection.Close()
 
 	connection.Write([]byte("+PONG\r\n"))
