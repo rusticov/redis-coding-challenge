@@ -40,6 +40,18 @@ func TestPingServer(t *testing.T) {
 				expectedResponse: "$12\r\necho message\r\n",
 			}},
 		},
+		"send two echos and receive replies to each": {
+			calls: []CallToRedis{
+				{
+					request:          "*2\r\n$4\r\nECHO\r\n$5\r\nfirst\r\n",
+					expectedResponse: "$5\r\nfirst\r\n",
+				},
+				{
+					request:          "*2\r\n$4\r\nECHO\r\n$6\r\nsecond\r\n",
+					expectedResponse: "$6\r\nsecond\r\n",
+				},
+			},
+		},
 	}
 
 	for testName, test := range tests {

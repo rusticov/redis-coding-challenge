@@ -59,14 +59,20 @@ func connectionHandler(connection net.Conn) {
 	defer connection.Close()
 
 	buffer := make([]byte, 1024)
-	n, err := connection.Read(buffer)
-	if err != nil {
-		// TODO return error message
-		return
+	for {
+		bytesRead, err := connection.Read(buffer)
+		if err != nil {
+			// TODO return error message
+			return
+		}
+
+		protocolData, _ := protocol.ReadFrame(buffer[:bytesRead])
+		data, _ := command.FromData(protocolData) // TODO respond with error data
+
+		err = command.Registry{}.Execute(connection, data)
+		if err != nil {
+			slog.Error("failed to execute request", "error", err, "request", string(buffer[:bytesRead]))
+		}
+		copy(buffer, buffer[bytesRead:])
 	}
-
-	protocolData, _ := protocol.ReadFrame(buffer[:n])
-	data, _ := command.FromData(protocolData) // TODO respond with error data
-
-	command.Registry{}.Execute(connection, data) // TODO handle error
 }
