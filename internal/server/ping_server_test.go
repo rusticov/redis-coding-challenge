@@ -46,15 +46,13 @@ func TestPingServer(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			testServer := createTestServer(t, test.variant)
 			defer func() {
-				err := testServer.Close()
-				require.NoError(t, err, "failed to close test server")
+				require.NoError(t, testServer.Close(), "failed to close test server")
 			}()
 
 			connection, err := net.DialTimeout("tcp", testServer.Address(), timeout)
 			require.NoError(t, err)
 			defer func() {
-				err := connection.Close()
-				require.NoError(t, err, "failed to close connection to the test server")
+				require.NoError(t, connection.Close(), "failed to close connection to the test server")
 			}()
 
 			for _, call := range test.calls {
@@ -75,15 +73,13 @@ func TestPingServer(t *testing.T) {
 	t.Run("send bad command should receive error message", func(t *testing.T) {
 		testServer := createTestServer(t)
 		defer func() {
-			err := testServer.Close()
-			require.NoError(t, err, "failed to close test server")
+			require.NoError(t, testServer.Close(), "failed to close test server")
 		}()
 
 		connection, err := net.DialTimeout("tcp", testServer.Address(), timeout)
 		require.NoError(t, err)
 		defer func() {
-			err := connection.Close()
-			require.NoError(t, err, "failed to close connection to the test server")
+			require.NoError(t, connection.Close(), "failed to close connection to the test server")
 		}()
 
 		_, err = connection.Write([]byte("*2\r\n$3\r\nBAD\r\n$3\r\narg\r\n"))
