@@ -81,6 +81,12 @@ func TestPingServer(t *testing.T) {
 				expectedResponse: "-ERR wrong number of arguments for 'echo' command\r\n",
 			}},
 		},
+		"send empty array should reply with error": {
+			calls: []CallToRedis{{
+				request:          "*1\r\n+ECHO\r\n",
+				expectedResponse: "-ERR Protocol error: expected '$', got '+'\r\n",
+			}},
+		},
 	}
 
 	for testName, test := range tests {

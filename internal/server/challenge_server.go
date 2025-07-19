@@ -74,11 +74,19 @@ func connectionHandler(connection net.Conn) {
 		if requestByteCount == 0 {
 			continue
 		}
-		data, _ := command.FromData(protocolData) // TODO respond with error data
+		data, commandError := command.FromData(protocolData)
 
-		err = command.Registry{}.Execute(connection, data)
-		if err != nil {
-			slog.Error("failed to execute request", "error", err, "request", buffer.String())
+		if commandError != nil {
+			slog.Error("failed to parse request", "error", commandError, "request", buffer.String())
+			err = protocol.WriteData(connection, commandError)
+			if err != nil {
+				slog.Error("failed to write parse request error", "error", err, "request", buffer.String())
+			}
+		} else {
+			err = command.Registry{}.Execute(connection, data)
+			if err != nil {
+				slog.Error("failed to execute request", "error", err, "request", buffer.String())
+			}
 		}
 
 		copy(readBuffer, buffer.Bytes()[requestByteCount:])

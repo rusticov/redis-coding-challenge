@@ -1,6 +1,7 @@
 package command
 
 import (
+	"fmt"
 	"redis-challenge/internal/protocol"
 )
 
@@ -15,14 +16,16 @@ func FromData(data protocol.Data) (Data, protocol.Data) {
 			return Data{}, protocol.NewSimpleError("missing command name")
 		}
 
-		if name, ok := array.Data[0].(protocol.BulkString); ok {
+		nameData := array.Data[0]
+
+		if name, ok := nameData.(protocol.BulkString); ok {
 			return Data{
 				Name:      string(name),
 				Arguments: array.Data[1:],
 			}, nil
 		}
 
-		return Data{}, protocol.NewSimpleError("command name must be a bulk string")
+		return Data{}, protocol.NewSimpleError(fmt.Sprintf("ERR Protocol error: expected '$', got '%c'", nameData.Symbol()))
 	}
 
 	if simpleError, ok := data.(protocol.SimpleError); ok {

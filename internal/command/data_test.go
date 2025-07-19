@@ -59,13 +59,22 @@ func TestReadingCommands(t *testing.T) {
 		assert.Equal(t, protocol.NewSimpleError("missing command name"), err)
 	})
 
-	t.Run("data whose name is not a bulk string should error", func(t *testing.T) {
+	t.Run("data whose name is a simple string should error", func(t *testing.T) {
 		data := protocol.Array{Data: []protocol.Data{
 			protocol.NewSimpleString("PING"),
 		}}
 
 		_, err := command.FromData(data)
-		assert.Equal(t, protocol.NewSimpleError("command name must be a bulk string"), err)
+		assert.Equal(t, protocol.NewSimpleError("ERR Protocol error: expected '$', got '+'"), err)
+	})
+
+	t.Run("data whose name is a non-string should error", func(t *testing.T) {
+		data := protocol.Array{Data: []protocol.Data{
+			protocol.NewSimpleInteger(1),
+		}}
+
+		_, err := command.FromData(data)
+		assert.Equal(t, protocol.NewSimpleError("ERR Protocol error: expected '$', got ':'"), err)
 	})
 
 	t.Run("data is not an array should error", func(t *testing.T) {
