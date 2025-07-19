@@ -1,10 +1,12 @@
 package server_test
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net"
 	"redis-challenge/internal/server"
+	"strings"
 	"testing"
 	"time"
 )
@@ -17,6 +19,8 @@ type CallToRedis struct {
 func TestPingServer(t *testing.T) {
 
 	timeout := 100 * time.Millisecond
+
+	const largeStringByteCount = 8192
 
 	tests := map[string]struct {
 		calls   []CallToRedis
@@ -52,6 +56,25 @@ func TestPingServer(t *testing.T) {
 				},
 			},
 		},
+		"send echo split across 2 requests": {
+			calls: []CallToRedis{
+				{
+					request: "*2\r\n$4\r\nECHO\r\n$5\r\nfi",
+				},
+				{
+					request:          "rst\r\n",
+					expectedResponse: "$5\r\nfirst\r\n",
+				},
+			},
+		},
+		"send echo with large message": {
+			calls: []CallToRedis{
+				{
+					request:          fmt.Sprintf("*2\r\n$4\r\nECHO\r\n$%d\r\n%s\r\n", largeStringByteCount, strings.Repeat("x", largeStringByteCount)),
+					expectedResponse: fmt.Sprintf("$%d\r\n%s\r\n", largeStringByteCount, strings.Repeat("x", largeStringByteCount)),
+				},
+			},
+		},
 	}
 
 	for testName, test := range tests {
@@ -71,7 +94,11 @@ func TestPingServer(t *testing.T) {
 				_, err = connection.Write([]byte(call.request))
 				require.NoError(t, err, "failed to write request: %s", call.request)
 
-				buffer := make([]byte, 256)
+				if call.expectedResponse == "" {
+					continue
+				}
+
+				buffer := make([]byte, largeStringByteCount+20)
 				n, err := connection.Read(buffer)
 				assert.NoError(t, err, "failed to read reply to the request: %s", call.request)
 

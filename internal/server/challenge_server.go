@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"log/slog"
 	"net"
@@ -58,21 +59,29 @@ func NewChallengeServer() (Server, error) {
 func connectionHandler(connection net.Conn) {
 	defer connection.Close()
 
-	buffer := make([]byte, 1024)
+	var buffer bytes.Buffer
+
+	readBuffer := make([]byte, 1024)
 	for {
-		bytesRead, err := connection.Read(buffer)
+		bytesRead, err := connection.Read(readBuffer)
 		if err != nil {
-			// TODO return error message
+			slog.Error("failed to read request", "error", err)
 			return
 		}
+		buffer.Write(readBuffer[:bytesRead])
 
-		protocolData, _ := protocol.ReadFrame(buffer[:bytesRead])
+		protocolData, requestByteCount := protocol.ReadFrame(buffer.Bytes())
+		if requestByteCount == 0 {
+			continue
+		}
 		data, _ := command.FromData(protocolData) // TODO respond with error data
 
 		err = command.Registry{}.Execute(connection, data)
 		if err != nil {
-			slog.Error("failed to execute request", "error", err, "request", string(buffer[:bytesRead]))
+			slog.Error("failed to execute request", "error", err, "request", buffer.String())
 		}
-		copy(buffer, buffer[bytesRead:])
+
+		copy(readBuffer, buffer.Bytes()[requestByteCount:])
+		buffer.Reset()
 	}
 }
