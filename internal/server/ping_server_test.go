@@ -75,6 +75,12 @@ func TestPingServer(t *testing.T) {
 				},
 			},
 		},
+		"send echo no message should reply with error": {
+			calls: []CallToRedis{{
+				request:          "*1\r\n$4\r\nECHO\r\n",
+				expectedResponse: "-ERR wrong number of arguments for 'echo' command\r\n",
+			}},
+		},
 	}
 
 	for testName, test := range tests {
