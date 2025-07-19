@@ -9,26 +9,36 @@ import (
 	"time"
 )
 
+type CallToRedis struct {
+	request          string
+	expectedResponse string
+}
+
 func TestPingServer(t *testing.T) {
 
 	timeout := 100 * time.Millisecond
 
 	tests := map[string]struct {
-		command          string
-		expectedResponse string
-		variant          ServerVariant
+		calls   []CallToRedis
+		variant ServerVariant
 	}{
 		"send ping without message and receive PONG": {
-			command:          "*1\r\n$4\r\nPING\r\n",
-			expectedResponse: "+PONG\r\n",
+			calls: []CallToRedis{{
+				request:          "*1\r\n$4\r\nPING\r\n",
+				expectedResponse: "+PONG\r\n",
+			}},
 		},
 		"send ping with message should receive message back in reply": {
-			command:          "*2\r\n$4\r\nPING\r\n$11\r\nthe message\r\n",
-			expectedResponse: "$11\r\nthe message\r\n",
+			calls: []CallToRedis{{
+				request:          "*2\r\n$4\r\nPING\r\n$11\r\nthe message\r\n",
+				expectedResponse: "$11\r\nthe message\r\n",
+			}},
 		},
 		"send echo with message should receive message back in reply": {
-			command:          "*2\r\n$4\r\nECHO\r\n$12\r\necho message\r\n",
-			expectedResponse: "$12\r\necho message\r\n",
+			calls: []CallToRedis{{
+				request:          "*2\r\n$4\r\nECHO\r\n$12\r\necho message\r\n",
+				expectedResponse: "$12\r\necho message\r\n",
+			}},
 		},
 	}
 
@@ -41,15 +51,18 @@ func TestPingServer(t *testing.T) {
 			require.NoError(t, err)
 			defer connection.Close()
 
-			_, err = connection.Write([]byte(test.command))
-			require.NoError(t, err)
+			for _, call := range test.calls {
+				_, err = connection.Write([]byte(call.request))
+				require.NoError(t, err, "failed to write request: %s", call.request)
 
-			buffer := make([]byte, 256)
-			n, err := connection.Read(buffer)
-			assert.NoError(t, err)
+				buffer := make([]byte, 256)
+				n, err := connection.Read(buffer)
+				assert.NoError(t, err, "failed to read reply to the request: %s", call.request)
 
-			response := string(buffer[:n])
-			assert.Equal(t, test.expectedResponse, response)
+				response := string(buffer[:n])
+				assert.Equal(t, call.expectedResponse, response,
+					"unexpected reply to the request: %s", call.request)
+			}
 		})
 	}
 
