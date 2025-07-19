@@ -86,7 +86,6 @@ func TestPingServer(t *testing.T) {
 				request:          "*3\r\n$4\r\nECHO\r\n$3\r\none\r\n$3\r\ntwo\r\n",
 				expectedResponse: "-ERR wrong number of arguments for 'echo' command\r\n",
 			}},
-			variant: RealRedisServer,
 		},
 		"send empty array should reply with error": {
 			calls: []CallToRedis{{
