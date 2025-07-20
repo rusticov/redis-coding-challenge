@@ -8,6 +8,8 @@ import (
 func WriteData(out io.Writer, data Data) error {
 	var text string
 	switch d := data.(type) {
+	case nil:
+		text = "$-1\r\n"
 	case SimpleString:
 		text = fmt.Sprintf("+%s\r\n", d)
 	case SimpleError:

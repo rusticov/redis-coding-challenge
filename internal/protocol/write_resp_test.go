@@ -16,6 +16,7 @@ func TestWritingData(t *testing.T) {
 		"simple integer": ":42\r\n",
 		"bulk string":    "$5\r\nabcde\r\n",
 		"array":          "*2\r\n+abcde\r\n:42\r\n",
+		"nil":            "$-1\r\n",
 	}
 
 	for testName, message := range tests {
