@@ -15,12 +15,12 @@ type executionTestCases map[string]struct {
 func TestSettingStringValues(t *testing.T) {
 
 	testCases := executionTestCases{
-		"getting value that has been set (key-1)": {
+		"getting value that has been set (key-set-with-value)": {
 			calls: []call.DataCall{
 				call.NewFromData(
 					[]protocol.Data{
 						protocol.NewBulkString("SET"),
-						protocol.NewBulkString("key-1"),
+						protocol.NewBulkString("key-set-with-value"),
 						protocol.NewBulkString("value 1"),
 					},
 					protocol.NewSimpleString("OK"),
@@ -28,11 +28,23 @@ func TestSettingStringValues(t *testing.T) {
 				call.NewFromData(
 					[]protocol.Data{
 						protocol.NewBulkString("GET"),
-						protocol.NewBulkString("key-1"),
+						protocol.NewBulkString("key-set-with-value"),
 					},
 					protocol.NewBulkString("value 1"),
 				),
 			},
+		},
+		"getting value that has been set (key-with-no-value)": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("key-with-no-value"),
+					},
+					nil,
+				),
+			},
+			driverChoice: tests.UseRealRedisServer,
 		},
 	}
 
