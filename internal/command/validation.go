@@ -9,6 +9,7 @@ import (
 var validators = map[string]validator{
 	"PING": validatePing,
 	"ECHO": validateEcho,
+	"SET":  validateSet,
 }
 
 type validator func(arguments []protocol.Data) (Command, protocol.Data)

@@ -34,12 +34,12 @@ func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ..
 		require.NoError(t, connection.Close(), "failed to close connection to the test server")
 	}()
 
-	for _, call := range calls {
-		request := call.Request()
+	for _, nextCall := range calls {
+		request := nextCall.Request()
 		_, err = connection.Write([]byte(request))
 		require.NoError(t, err, "failed to write request: %s", request)
 
-		if !call.IsResponseExpected() {
+		if !nextCall.IsResponseExpected() {
 			continue
 		}
 
@@ -49,9 +49,7 @@ func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ..
 
 		response := string(buffer[:n])
 
-		call.ConfirmResponse(t, response)
-		//assert.Equal(t, call.expectedResponse, response,
-		//	"unexpected reply to the request: %s", call.request)
+		nextCall.ConfirmResponse(t, response)
 	}
 }
 

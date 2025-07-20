@@ -50,7 +50,7 @@ func (c DataCall) Request() string {
 }
 
 func (c DataCall) IsResponseExpected() bool {
-	return c.expectedResponse != nil
+	return true
 }
 
 func (c DataCall) ConfirmResponse(t testing.TB, response string) {

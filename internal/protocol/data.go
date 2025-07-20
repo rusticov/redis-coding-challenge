@@ -2,7 +2,7 @@ package protocol
 
 type Data interface {
 	IsData()
-	Symbol() rune
+	Symbol() DataTypeSymbol
 }
 
 type SimpleString string
@@ -13,8 +13,8 @@ func NewSimpleString(text string) SimpleString {
 
 func (s SimpleString) IsData() {}
 
-func (s SimpleString) Symbol() rune {
-	return '+'
+func (s SimpleString) Symbol() DataTypeSymbol {
+	return SimpleStringSymbol
 }
 
 type SimpleError string
@@ -25,8 +25,8 @@ func NewSimpleError(s string) SimpleError {
 
 func (s SimpleError) IsData() {}
 
-func (s SimpleError) Symbol() rune {
-	return '-'
+func (s SimpleError) Symbol() DataTypeSymbol {
+	return SimpleErrorSymbol
 }
 
 type SimpleInteger int64
@@ -37,8 +37,8 @@ func NewSimpleInteger(value int64) SimpleInteger {
 
 func (s SimpleInteger) IsData() {}
 
-func (s SimpleInteger) Symbol() rune {
-	return ':'
+func (s SimpleInteger) Symbol() DataTypeSymbol {
+	return SimpleIntegerSymbol
 }
 
 type BulkString string
@@ -49,8 +49,8 @@ func NewBulkString(text string) BulkString {
 
 func (s BulkString) IsData() {}
 
-func (s BulkString) Symbol() rune {
-	return '$'
+func (s BulkString) Symbol() DataTypeSymbol {
+	return BulkStringSymbol
 }
 
 type Array struct {
@@ -63,6 +63,6 @@ func NewArray(data []Data) Array {
 
 func (s Array) IsData() {}
 
-func (s Array) Symbol() rune {
-	return '*'
+func (s Array) Symbol() DataTypeSymbol {
+	return ArraySymbol
 }
