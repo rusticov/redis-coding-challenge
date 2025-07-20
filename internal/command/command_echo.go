@@ -5,6 +5,13 @@ import (
 	"redis-challenge/internal/protocol"
 )
 
+func validateEcho(arguments []protocol.Data) (Command, protocol.Data) {
+	if len(arguments) != 1 {
+		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'echo' command")
+	}
+	return nil, nil
+}
+
 type EchoCommand struct {
 }
 
