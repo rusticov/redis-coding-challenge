@@ -57,7 +57,12 @@ func NewChallengeServer() (Server, error) {
 }
 
 func connectionHandler(connection net.Conn) {
-	defer connection.Close()
+	defer func() {
+		err := connection.Close()
+		if err != nil {
+			slog.Error("failed to close connection", "error", err)
+		}
+	}()
 
 	var buffer bytes.Buffer
 
