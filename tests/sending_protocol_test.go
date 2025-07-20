@@ -1,4 +1,4 @@
-package server_test
+package tests_test
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"net"
 	"redis-challenge/internal/server"
+	"redis-challenge/tests"
 	"strings"
 	"testing"
 	"time"
@@ -16,13 +17,13 @@ type CallToRedis struct {
 	expectedResponse string
 }
 
-func TestPingServer(t *testing.T) {
+func TestSendingProtocolToServer(t *testing.T) {
 
 	timeout := 100 * time.Millisecond
 
 	const largeStringByteCount = 8192
 
-	tests := map[string]struct {
+	testCases := map[string]struct {
 		calls   []CallToRedis
 		variant ServerVariant
 	}{
@@ -95,7 +96,7 @@ func TestPingServer(t *testing.T) {
 		},
 	}
 
-	for testName, test := range tests {
+	for testName, test := range testCases {
 		t.Run(testName, func(t *testing.T) {
 			testServer := createTestServer(t, test.variant)
 			defer func() {
@@ -166,7 +167,7 @@ func createTestServer(t testing.TB, variant ...ServerVariant) server.Server {
 
 	switch activeVariant {
 	case RealRedisServer:
-		return server.NewRealRedisServer()
+		return tests.NewRealRedisServer()
 	default:
 		challengeServer, err := server.NewChallengeServer()
 		require.NoError(t, err)
