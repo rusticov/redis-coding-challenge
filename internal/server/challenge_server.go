@@ -80,23 +80,7 @@ func connectionHandler(connection net.Conn, s *store.Store) {
 		if requestByteCount == 0 {
 			continue
 		}
-		parsedCommand, commandError := command.Validate(protocolData)
-
-		var response protocol.Data
-
-		if commandError != nil {
-			slog.Error("failed to parse request", "error", commandError, "request", buffer.String())
-
-			response = commandError
-		} else if parsedCommand == nil {
-			response = protocol.NewSimpleError("ERR unknown command")
-			slog.Error("expect a command if there is no error data on parsing", "error", commandError, "request", buffer.String())
-		} else {
-			response, err = parsedCommand.Execute(s)
-			if err != nil {
-				slog.Error("failed to execute request", "error", err, "request", buffer.String())
-			}
-		}
+		response := executeCommand(protocolData, buffer, s)
 
 		err = protocol.WriteData(connection, response)
 		if err != nil {
@@ -105,5 +89,28 @@ func connectionHandler(connection net.Conn, s *store.Store) {
 
 		copy(readBuffer, buffer.Bytes()[requestByteCount:])
 		buffer.Reset()
+	}
+}
+
+func executeCommand(protocolData protocol.Data, buffer bytes.Buffer, s *store.Store) protocol.Data {
+	parsedCommand, commandError := command.Validate(protocolData)
+
+	var response protocol.Data
+
+	switch {
+	case commandError != nil:
+		slog.Error("failed to parse request", "error", commandError, "request", buffer.String())
+		return commandError
+	case parsedCommand == nil:
+		slog.Error("expect a command if there is no error data on parsing", "error", commandError, "request", buffer.String())
+		return protocol.NewSimpleError("ERR protocol error")
+	default:
+		var err error
+		response, err = parsedCommand.Execute(s)
+		if err != nil {
+			slog.Error("failed to execute request", "error", err, "request", buffer.String())
+		}
+
+		return response
 	}
 }
