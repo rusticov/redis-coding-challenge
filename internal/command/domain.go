@@ -2,7 +2,12 @@ package command
 
 import (
 	"redis-challenge/internal/protocol"
+	"redis-challenge/internal/store"
 )
+
+type Command interface {
+	Execute(s *store.Store) (protocol.Data, error)
+}
 
 type Data struct {
 	Name      string

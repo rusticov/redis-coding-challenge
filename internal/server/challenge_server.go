@@ -7,6 +7,7 @@ import (
 	"net"
 	"redis-challenge/internal/command"
 	"redis-challenge/internal/protocol"
+	"redis-challenge/internal/store"
 )
 
 type ChallengeServer struct {
@@ -23,7 +24,7 @@ func (c *ChallengeServer) Close() error {
 	return c.socket.Close()
 }
 
-func NewChallengeServer() (Server, error) {
+func NewChallengeServer(s *store.Store) (Server, error) {
 	socket, err := net.Listen("tcp", ":0")
 	if err != nil {
 		return nil, err
@@ -44,7 +45,7 @@ func NewChallengeServer() (Server, error) {
 				}
 
 				go func() {
-					connectionHandler(connection)
+					connectionHandler(connection, s)
 				}()
 			}
 		}
@@ -56,7 +57,7 @@ func NewChallengeServer() (Server, error) {
 	}, nil
 }
 
-func connectionHandler(connection net.Conn) {
+func connectionHandler(connection net.Conn, s *store.Store) {
 	defer func() {
 		err := connection.Close()
 		if err != nil {
@@ -79,19 +80,27 @@ func connectionHandler(connection net.Conn) {
 		if requestByteCount == 0 {
 			continue
 		}
-		data, commandError := command.FromData(protocolData)
+		parsedCommand, commandError := command.Validate(protocolData)
+
+		var response protocol.Data
 
 		if commandError != nil {
 			slog.Error("failed to parse request", "error", commandError, "request", buffer.String())
-			err = protocol.WriteData(connection, commandError)
-			if err != nil {
-				slog.Error("failed to write parse request error", "error", err, "request", buffer.String())
-			}
+
+			response = commandError
+		} else if parsedCommand == nil {
+			response = protocol.NewSimpleError("ERR unknown command")
+			slog.Error("expect a command if there is no error data on parsing", "error", commandError, "request", buffer.String())
 		} else {
-			err = command.Registry{}.Execute(connection, data)
+			response, err = parsedCommand.Execute(s)
 			if err != nil {
 				slog.Error("failed to execute request", "error", err, "request", buffer.String())
 			}
+		}
+
+		err = protocol.WriteData(connection, response)
+		if err != nil {
+			slog.Error("failed to write parse request error", "error", err, "request", buffer.String())
 		}
 
 		copy(readBuffer, buffer.Bytes()[requestByteCount:])

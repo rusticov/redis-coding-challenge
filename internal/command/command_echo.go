@@ -1,8 +1,8 @@
 package command
 
 import (
-	"io"
 	"redis-challenge/internal/protocol"
+	"redis-challenge/internal/store"
 )
 
 func validateEcho(arguments []protocol.Data) (Command, protocol.Data) {
@@ -12,15 +12,13 @@ func validateEcho(arguments []protocol.Data) (Command, protocol.Data) {
 	if _, ok := arguments[0].(protocol.BulkString); !ok {
 		return nil, NewWrongDataTypeError(arguments[0], protocol.BulkStringSymbol)
 	}
-	return nil, nil
+	return EchoCommand{response: arguments[0]}, nil
 }
 
 type EchoCommand struct {
+	response protocol.Data
 }
 
-func (EchoCommand) Execute(writer io.Writer, data Data) error {
-	if len(data.Arguments) != 1 {
-		return protocol.WriteData(writer, protocol.NewSimpleError("ERR wrong number of arguments for 'echo' command"))
-	}
-	return protocol.WriteData(writer, data.Arguments[0])
+func (cmd EchoCommand) Execute(_ *store.Store) (protocol.Data, error) {
+	return cmd.response, nil
 }

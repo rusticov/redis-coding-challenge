@@ -1,32 +1,28 @@
 package command
 
 import (
-	"io"
 	"redis-challenge/internal/protocol"
+	"redis-challenge/internal/store"
 )
 
 func validatePing(arguments []protocol.Data) (Command, protocol.Data) {
 	switch len(arguments) {
 	case 0:
-		return nil, nil
+		return PingCommand{response: protocol.NewSimpleString("PONG")}, nil
 	case 1:
 		if _, ok := arguments[0].(protocol.BulkString); !ok {
 			return nil, NewWrongDataTypeError(arguments[0], protocol.BulkStringSymbol)
 		}
-		return nil, nil
+		return PingCommand{response: arguments[0]}, nil
 	default:
 		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'ping' command")
 	}
 }
 
 type PingCommand struct {
+	response protocol.Data
 }
 
-func (PingCommand) Execute(writer io.Writer, data Data) error {
-	if len(data.Arguments) == 0 {
-		_, err := writer.Write([]byte("+PONG\r\n"))
-		return err
-	}
-
-	return protocol.WriteData(writer, data.Arguments[0])
+func (cmd PingCommand) Execute(_ *store.Store) (protocol.Data, error) {
+	return cmd.response, nil
 }

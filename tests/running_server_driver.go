@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"net"
 	"redis-challenge/internal/server"
+	"redis-challenge/internal/store"
 	"redis-challenge/tests/call"
 	"testing"
 	"time"
@@ -63,7 +64,7 @@ func createTestServer(t testing.TB, variant ...ServerVariant) server.Server {
 	case UseRealRedisServer:
 		return NewRealRedisServer()
 	default:
-		challengeServer, err := server.NewChallengeServer()
+		challengeServer, err := server.NewChallengeServer(store.New())
 		require.NoError(t, err)
 		return challengeServer
 	}
