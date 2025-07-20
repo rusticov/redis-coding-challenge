@@ -1,7 +1,6 @@
 package command
 
 import (
-	"fmt"
 	"redis-challenge/internal/protocol"
 )
 
@@ -25,7 +24,7 @@ func FromData(data protocol.Data) (Data, protocol.Data) {
 			}, nil
 		}
 
-		return Data{}, protocol.NewSimpleError(fmt.Sprintf("ERR Protocol error: expected '$', got '%c'", nameData.Symbol()))
+		return Data{}, NewWrongDataTypeError(nameData, protocol.BulkStringSymbol)
 	}
 
 	if simpleError, ok := data.(protocol.SimpleError); ok {

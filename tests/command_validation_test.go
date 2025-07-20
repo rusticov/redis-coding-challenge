@@ -47,6 +47,17 @@ func TestCommandValidation(t *testing.T) {
 				),
 			},
 		},
+		"ping command with simple string message": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("PING"),
+						protocol.NewSimpleString("message"),
+					},
+					protocol.NewSimpleError("ERR Protocol error: expected '$', got '+'"),
+				),
+			},
+		},
 	}
 
 	echoTestCases := validationTestCases{
@@ -79,6 +90,17 @@ func TestCommandValidation(t *testing.T) {
 						protocol.NewBulkString("message"),
 					},
 					protocol.NewSimpleError("ERR wrong number of arguments for 'echo' command"),
+				),
+			},
+		},
+		"echo command with simple string message": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("ECHO"),
+						protocol.NewSimpleString("message"),
+					},
+					protocol.NewSimpleError("ERR Protocol error: expected '$', got '+'"),
 				),
 			},
 		},

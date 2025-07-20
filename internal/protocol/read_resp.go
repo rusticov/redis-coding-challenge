@@ -6,6 +6,16 @@ import (
 	"strconv"
 )
 
+type DataTypeSymbol rune
+
+const (
+	SimpleStringSymbol  DataTypeSymbol = '+'
+	SimpleErrorSymbol   DataTypeSymbol = '-'
+	SimpleIntegerSymbol DataTypeSymbol = ':'
+	BulkStringSymbol    DataTypeSymbol = '$'
+	ArraySymbol         DataTypeSymbol = '*'
+)
+
 func ReadFrame(bs []byte) (Data, int) {
 	delimiterIndex := bytes.Index(bs, []byte("\r\n"))
 	if delimiterIndex == -1 {
@@ -14,20 +24,20 @@ func ReadFrame(bs []byte) (Data, int) {
 
 	text := string(bs[1:delimiterIndex])
 
-	symbol := bs[0]
+	symbol := DataTypeSymbol(bs[0])
 
 	frameSize := delimiterIndex + 2
 
 	switch symbol {
-	case '-':
+	case SimpleErrorSymbol:
 		return NewSimpleError(text), frameSize
-	case ':':
+	case SimpleIntegerSymbol:
 		return parseSimpleInteger(text, frameSize)
-	case '$':
+	case BulkStringSymbol:
 		return parseBulkString(text, frameSize, bs)
-	case '*':
+	case ArraySymbol:
 		return parseArray(bs, text, frameSize)
-	case '+':
+	case SimpleStringSymbol:
 		return NewSimpleString(text), frameSize
 	default:
 		return NewSimpleError(fmt.Sprintf("unknown protocol symbol \"%c\"", symbol)), frameSize

@@ -6,10 +6,17 @@ import (
 )
 
 func validatePing(arguments []protocol.Data) (Command, protocol.Data) {
-	if len(arguments) > 1 {
+	switch len(arguments) {
+	case 0:
+		return nil, nil
+	case 1:
+		if _, ok := arguments[0].(protocol.BulkString); !ok {
+			return nil, NewWrongDataTypeError(arguments[0], protocol.BulkStringSymbol)
+		}
+		return nil, nil
+	default:
 		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'ping' command")
 	}
-	return nil, nil
 }
 
 type PingCommand struct {
