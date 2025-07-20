@@ -87,14 +87,18 @@ func TestCommandValidation(t *testing.T) {
 	for _, testCases := range allTestCases {
 		for name, testCase := range testCases {
 			t.Run(name, func(t *testing.T) {
-				_, errorData := command.Validate(testCase.protocol)
-
-				if testCase.isOK {
-					assert.Nil(t, errorData, "command should be valid")
-				} else {
-					assert.Equal(t, testCase.expectedError, errorData, "command should be invalid")
-				}
+				validateAgainstCommandValidator(t, testCase.protocol, testCase.expectedError)
 			})
 		}
+	}
+}
+
+func validateAgainstCommandValidator(t testing.TB, input protocol.Data, expectedError protocol.Data) {
+	_, errorData := command.Validate(input)
+
+	if expectedError == nil {
+		assert.Nil(t, errorData, "command should be valid")
+	} else {
+		assert.Equal(t, expectedError, errorData, "command should be invalid")
 	}
 }
