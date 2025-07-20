@@ -36,7 +36,7 @@ func TestDataTypeHasResp_Symbol(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, testCase.symbol, testCase.data.Symbol(),
+			assert.Equal(t, protocol.DataTypeSymbol(testCase.symbol), testCase.data.Symbol(),
 				"should return the correct symbol for the data type")
 		})
 	}

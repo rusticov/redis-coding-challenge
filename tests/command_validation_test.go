@@ -106,6 +106,52 @@ func TestCommandValidation(t *testing.T) {
 		},
 	}
 
+	getCommandTestCases := validationTestCases{
+		"get command with no arguments has the wrong length": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+					},
+					protocol.NewSimpleError("ERR wrong number of arguments for 'get' command"),
+				),
+			},
+		},
+		"get command with bulk string message is ok": {
+			calls: []call.DataCall{
+				call.NewFromDataWithoutError(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("key"),
+					},
+				),
+			},
+		},
+		"get command with multiple arguments has the wrong length": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("message"),
+						protocol.NewBulkString("message"),
+					},
+					protocol.NewSimpleError("ERR wrong number of arguments for 'get' command"),
+				),
+			},
+		},
+		"get command with simple string message": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewSimpleString("message"),
+					},
+					protocol.NewSimpleError("ERR Protocol error: expected '$', got '+'"),
+				),
+			},
+		},
+	}
+
 	setCommandTestCases := validationTestCases{
 		"set command with no arguments has the wrong length": {
 			calls: []call.DataCall{
@@ -228,6 +274,7 @@ func TestCommandValidation(t *testing.T) {
 	allTestCases := []validationTestCases{
 		pingTestCases,
 		echoTestCases,
+		getCommandTestCases,
 		setCommandTestCases,
 		unknownCommandTestCases,
 	}

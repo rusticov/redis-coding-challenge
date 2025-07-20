@@ -3,12 +3,12 @@ package command
 import (
 	"fmt"
 	"redis-challenge/internal/protocol"
-	"strings"
 )
 
 var validators = map[string]validator{
 	"PING": validatePing,
 	"ECHO": validateEcho,
+	"GET":  validateGet,
 	"SET":  validateSet,
 }
 
@@ -20,7 +20,7 @@ func Validate(data protocol.Data) (Command, protocol.Data) {
 		return nil, errorData
 	}
 
-	if v, ok := validators[strings.ToUpper(commandData.Name)]; ok {
+	if v, ok := validators[commandData.Name]; ok {
 		return v(commandData.Arguments)
 	}
 
