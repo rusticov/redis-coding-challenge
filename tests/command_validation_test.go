@@ -1,80 +1,109 @@
 package tests_test
 
 import (
-	"github.com/stretchr/testify/assert"
 	"redis-challenge/internal/command"
 	"redis-challenge/internal/protocol"
+	"redis-challenge/tests"
+	"redis-challenge/tests/call"
 	"testing"
 )
 
 type validationTestCases map[string]struct {
-	protocol      protocol.Data
-	expectedError protocol.Data
-	isOK          bool
+	calls        []call.DataCall
+	driverChoice SelectTestCaseDriver
 }
 
 func TestCommandValidation(t *testing.T) {
 
 	pingTestCases := validationTestCases{
 		"ping command with no arguments is ok": {
-			protocol: protocol.Array{Data: []protocol.Data{
-				protocol.NewBulkString("PING"),
-			}},
-			isOK: true,
+			calls: []call.DataCall{
+				call.NewFromDataWithoutError(
+					[]protocol.Data{
+						protocol.NewBulkString("PING"),
+					},
+				),
+			},
 		},
 		"ping command with message is ok": {
-			protocol: protocol.Array{Data: []protocol.Data{
-				protocol.NewBulkString("PING"),
-				protocol.NewBulkString("message"),
-			}},
-			isOK: true,
+			calls: []call.DataCall{
+				call.NewFromDataWithoutError(
+					[]protocol.Data{
+						protocol.NewBulkString("PING"),
+						protocol.NewBulkString("message"),
+					},
+				),
+			},
 		},
 		"ping command with two message is too long": {
-			protocol: protocol.Array{Data: []protocol.Data{
-				protocol.NewBulkString("PING"),
-				protocol.NewBulkString("message"),
-				protocol.NewBulkString("message"),
-			}},
-			expectedError: protocol.NewSimpleError("ERR wrong number of arguments for 'ping' command"),
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("PING"),
+						protocol.NewBulkString("message"),
+						protocol.NewBulkString("message"),
+					},
+					protocol.NewSimpleError("ERR wrong number of arguments for 'ping' command"),
+				),
+			},
 		},
 	}
 
 	echoTestCases := validationTestCases{
 		"echo command with no arguments has the wrong length": {
-			protocol: protocol.Array{Data: []protocol.Data{
-				protocol.NewBulkString("ECHO"),
-			}},
-			expectedError: protocol.NewSimpleError("ERR wrong number of arguments for 'echo' command"),
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("ECHO"),
+					},
+					protocol.NewSimpleError("ERR wrong number of arguments for 'echo' command"),
+				),
+			},
 		},
 		"echo command with bulk string message is ok": {
-			protocol: protocol.Array{Data: []protocol.Data{
-				protocol.NewBulkString("ECHO"),
-				protocol.NewBulkString("message"),
-			}},
-			isOK: true,
+			calls: []call.DataCall{
+				call.NewFromDataWithoutError(
+					[]protocol.Data{
+						protocol.NewBulkString("ECHO"),
+						protocol.NewBulkString("message"),
+					},
+				),
+			},
 		},
 		"echo command with multiple arguments has the wrong length": {
-			protocol: protocol.Array{Data: []protocol.Data{
-				protocol.NewBulkString("ECHO"),
-				protocol.NewBulkString("message"),
-				protocol.NewBulkString("message"),
-			}},
-			expectedError: protocol.NewSimpleError("ERR wrong number of arguments for 'echo' command"),
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("ECHO"),
+						protocol.NewBulkString("message"),
+						protocol.NewBulkString("message"),
+					},
+					protocol.NewSimpleError("ERR wrong number of arguments for 'echo' command"),
+				),
+			},
 		},
 	}
 
 	unknownCommandTestCases := validationTestCases{
 		"command 'UNKNOWN' is not a valid command": {
-			protocol: protocol.Array{Data: []protocol.Data{
-				protocol.NewBulkString("UNKNOWN"),
-			}},
-			expectedError: protocol.NewSimpleError("ERR unknown command 'UNKNOWN'"),
+			calls: []call.DataCall{
+				call.NewFromDataWithPartialError(
+					[]protocol.Data{
+						protocol.NewBulkString("UNKNOWN"),
+					},
+					"ERR unknown command 'UNKNOWN'",
+				),
+			},
 		},
 		"command 'BAD' is not a valid command": {
-			protocol: protocol.Array{Data: []protocol.Data{
-				protocol.NewBulkString("BAD"),
-			}},
-			expectedError: protocol.NewSimpleError("ERR unknown command 'BAD'"),
+			calls: []call.DataCall{
+				call.NewFromDataWithPartialError(
+					[]protocol.Data{
+						protocol.NewBulkString("BAD"),
+					},
+					"ERR unknown command 'BAD'",
+				),
+			},
 		},
 	}
 
@@ -87,18 +116,34 @@ func TestCommandValidation(t *testing.T) {
 	for _, testCases := range allTestCases {
 		for name, testCase := range testCases {
 			t.Run(name, func(t *testing.T) {
-				validateAgainstCommandValidator(t, testCase.protocol, testCase.expectedError)
+				validateCommands(t, testCase.calls, testCase.driverChoice)
 			})
 		}
 	}
 }
 
-func validateAgainstCommandValidator(t testing.TB, input protocol.Data, expectedError protocol.Data) {
-	_, errorData := command.Validate(input)
+type SelectTestCaseDriver string
 
-	if expectedError == nil {
-		assert.Nil(t, errorData, "command should be valid")
-	} else {
-		assert.Equal(t, expectedError, errorData, "command should be invalid")
+const (
+	SelectTestCaseDriverRedisServer SelectTestCaseDriver = "redis-server-driver"
+	SelectTestCaseDriverRedisClone  SelectTestCaseDriver = "redis-clone-driver"
+)
+
+func validateCommands(t testing.TB, calls []call.DataCall, driverChoice SelectTestCaseDriver) {
+	switch driverChoice {
+	case SelectTestCaseDriverRedisServer:
+		tests.DriveProtocolAgainstServer(t, calls, tests.UseRealRedisServer)
+	case SelectTestCaseDriverRedisClone:
+		tests.DriveProtocolAgainstServer(t, calls, tests.UseChallengeServer)
+	default:
+		validateAgainstCommandValidator(t, calls)
+	}
+}
+
+func validateAgainstCommandValidator(t testing.TB, calls []call.DataCall) {
+	for _, c := range calls {
+		_, errorData := command.Validate(c.RequestData())
+
+		c.ConfirmValidation(t, errorData)
 	}
 }

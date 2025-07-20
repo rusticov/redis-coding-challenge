@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"net"
 	"redis-challenge/internal/server"
+	"redis-challenge/tests/call"
 	"testing"
 	"time"
 )
@@ -21,7 +22,7 @@ const (
 	UseChallengeServer ServerVariant = ""
 )
 
-func DriveProtocolAgainstServer[T Call](t testing.TB, calls []T, variant ...ServerVariant) {
+func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ...ServerVariant) {
 	testServer := createTestServer(t, variant...)
 	defer func() {
 		require.NoError(t, testServer.Close(), "failed to close test server")
