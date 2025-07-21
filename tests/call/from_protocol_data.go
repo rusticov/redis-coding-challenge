@@ -56,7 +56,7 @@ func (c DataCall) IsResponseExpected() bool {
 func (c DataCall) ConfirmResponse(t testing.TB, response string) {
 	switch {
 	case c.callIsNotAnError:
-		assert.NotEqual(t, "-", response[0:1], "response should not be an error")
+		assert.NotEqual(t, "-", response[0:1], "response should not be an error: %s", response)
 	case c.expectedPartialError != "":
 		assert.Contains(t, response, "-"+c.expectedPartialError)
 	default:

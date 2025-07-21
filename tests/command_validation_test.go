@@ -246,6 +246,96 @@ func TestCommandValidation(t *testing.T) {
 				),
 			},
 		},
+		"set command with only key and bulk string value and GET is ok": {
+			calls: []call.DataCall{
+				call.NewFromDataWithoutError(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key"),
+						protocol.NewBulkString("value"),
+						protocol.NewBulkString("GET"),
+					},
+				),
+			},
+		},
+		"set command with only key and bulk string value and NX is ok": {
+			calls: []call.DataCall{
+				call.NewFromDataWithoutError(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key"),
+						protocol.NewBulkString("value"),
+						protocol.NewBulkString("NX"),
+					},
+				),
+			},
+		},
+		"set command with only key and bulk string value and XX is ok": {
+			calls: []call.DataCall{
+				call.NewFromDataWithoutError(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key"),
+						protocol.NewBulkString("value"),
+						protocol.NewBulkString("XX"),
+					},
+				),
+			},
+		},
+		"set command with only key and bulk string value and GET and NX is ok": {
+			calls: []call.DataCall{
+				call.NewFromDataWithoutError(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key"),
+						protocol.NewBulkString("value"),
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("NX"),
+					},
+				),
+			},
+		},
+		"set command with only key and bulk string value and NX and GET is ok": {
+			calls: []call.DataCall{
+				call.NewFromDataWithoutError(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key"),
+						protocol.NewBulkString("value"),
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("NX"),
+					},
+				),
+			},
+		},
+		"set command with only key and bulk string value and XX and NX is an error": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key"),
+						protocol.NewBulkString("value"),
+						protocol.NewBulkString("XX"),
+						protocol.NewBulkString("NX"),
+					},
+					protocol.NewSimpleError("ERR syntax error"),
+				),
+			},
+		},
+		"set command with only key and bulk string value and NX and XX is an error": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key"),
+						protocol.NewBulkString("value"),
+						protocol.NewBulkString("NX"),
+						protocol.NewBulkString("XX"),
+					},
+					protocol.NewSimpleError("ERR syntax error"),
+				),
+			},
+		},
 	}
 
 	unknownCommandTestCases := validationTestCases{
