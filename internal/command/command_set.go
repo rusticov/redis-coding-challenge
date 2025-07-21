@@ -31,12 +31,12 @@ func validateSet(arguments []protocol.Data) (Command, protocol.Data) {
 				if cmd.existenceOption != valueExistenceOptionNone {
 					return nil, NewSyntaxError()
 				}
-				cmd.existenceOption = valueExistenceOptionPresent
+				cmd.existenceOption = existenceOptionSetOnlyIfMissing
 			case "XX":
 				if cmd.existenceOption != valueExistenceOptionNone {
 					return nil, NewSyntaxError()
 				}
-				cmd.existenceOption = valueExistenceOptionAbsent
+				cmd.existenceOption = existenceOptionSetOnlyIfPresent
 			default:
 				return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'set' command")
 			}
@@ -48,19 +48,19 @@ func validateSet(arguments []protocol.Data) (Command, protocol.Data) {
 	return cmd, nil
 }
 
-type valueExistenceOption string
+type existenceOption string
 
 const (
-	valueExistenceOptionPresent valueExistenceOption = "NX"
-	valueExistenceOptionAbsent  valueExistenceOption = "XX"
-	valueExistenceOptionNone    valueExistenceOption = ""
+	existenceOptionSetOnlyIfMissing existenceOption = "NX"
+	existenceOptionSetOnlyIfPresent existenceOption = "XX"
+	valueExistenceOptionNone        existenceOption = ""
 )
 
 type SetCommand struct {
 	key             string
 	value           string
 	get             bool
-	existenceOption valueExistenceOption
+	existenceOption existenceOption
 }
 
 func (cmd SetCommand) Execute(s *store.Store) (protocol.Data, error) {
