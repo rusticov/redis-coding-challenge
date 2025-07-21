@@ -48,6 +48,28 @@ func TestSettingStringValues(t *testing.T) {
 				),
 			},
 		},
+		"getting value that has been set (key-with-value-get)": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-value-get" + uniqueSuffix),
+						protocol.NewBulkString("first value"),
+						protocol.NewBulkString("GET"),
+					},
+					nil,
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-value-get" + uniqueSuffix),
+						protocol.NewBulkString("second value"),
+						protocol.NewBulkString("GET"),
+					},
+					protocol.NewBulkString("first value"),
+				),
+			},
+		},
 	}
 
 	for name, testCase := range testCases {
