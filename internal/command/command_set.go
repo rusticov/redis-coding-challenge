@@ -65,9 +65,14 @@ type SetCommand struct {
 
 func (cmd SetCommand) Execute(s *store.Store) (protocol.Data, error) {
 	oldValue, exists := s.Get(cmd.key)
+
 	if exists && cmd.existenceOption == existenceOptionSetOnlyIfMissing {
 		return nil, nil
 	}
+	if !exists && cmd.existenceOption == existenceOptionSetOnlyIfPresent {
+		return nil, nil
+	}
+
 	s.Add(cmd.key, cmd.value)
 
 	if cmd.get {

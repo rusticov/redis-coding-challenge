@@ -99,6 +99,54 @@ func TestSettingStringValues(t *testing.T) {
 				),
 			},
 		},
+		"setting value with XX option does not set the value if key does not exist": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("missing-key-with-value-xx" + uniqueSuffix),
+						protocol.NewBulkString("first value"),
+						protocol.NewBulkString("XX"),
+					},
+					nil,
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("missing-key-with-value-xx" + uniqueSuffix),
+					},
+					nil,
+				),
+			},
+		},
+		"setting value with XX option sets the value if key has a current value": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-value-xx" + uniqueSuffix),
+						protocol.NewBulkString("first value"),
+					},
+					protocol.NewSimpleString("OK"),
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-value-xx" + uniqueSuffix),
+						protocol.NewBulkString("second value"),
+						protocol.NewBulkString("XX"),
+					},
+					protocol.NewSimpleString("OK"),
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("key-with-value-xx" + uniqueSuffix),
+					},
+					protocol.NewBulkString("second value"),
+				),
+			},
+		},
 	}
 
 	for name, testCase := range testCases {
