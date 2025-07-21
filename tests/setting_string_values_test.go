@@ -70,6 +70,35 @@ func TestSettingStringValues(t *testing.T) {
 				),
 			},
 		},
+		"setting value with NX options only sets the value if it does not exist": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-value-nx" + uniqueSuffix),
+						protocol.NewBulkString("first value"),
+						protocol.NewBulkString("NX"),
+					},
+					protocol.NewSimpleString("OK"),
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-value-nx" + uniqueSuffix),
+						protocol.NewBulkString("second value"),
+						protocol.NewBulkString("NX"),
+					},
+					nil,
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("key-with-value-nx" + uniqueSuffix),
+					},
+					protocol.NewBulkString("first value"),
+				),
+			},
+		},
 	}
 
 	for name, testCase := range testCases {
