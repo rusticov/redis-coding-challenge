@@ -56,12 +56,15 @@ func (c DataCall) IsResponseExpected() bool {
 func (c DataCall) ConfirmResponse(t testing.TB, response string) {
 	switch {
 	case c.callIsNotAnError:
-		assert.NotEqual(t, "-", response[0:1], "response should not be an error: %s", response)
+		assert.NotEqual(t, "-", response[0:1],
+			"response should not be an error to the request %s", c.Request())
 	case c.expectedPartialError != "":
-		assert.Contains(t, response, "-"+c.expectedPartialError)
+		assert.Contains(t, response, "-"+c.expectedPartialError,
+			"partial error response to the request %s", c.Request())
 	default:
 		actualResponse, _ := protocol.ReadFrame([]byte(response))
-		assert.Equal(t, c.expectedResponse, actualResponse)
+		assert.Equal(t, c.expectedResponse, actualResponse,
+			"error response to the request %s", c.Request())
 	}
 }
 
