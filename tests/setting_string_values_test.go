@@ -70,7 +70,7 @@ func TestSettingStringValues(t *testing.T) {
 				),
 			},
 		},
-		"setting value with NX options only sets the value if it does not exist": {
+		"setting value with NX option only sets the value if it does not exist": {
 			calls: []call.DataCall{
 				call.NewFromData(
 					[]protocol.Data{
@@ -89,6 +89,37 @@ func TestSettingStringValues(t *testing.T) {
 						protocol.NewBulkString("NX"),
 					},
 					nil,
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("key-with-value-nx" + uniqueSuffix),
+					},
+					protocol.NewBulkString("first value"),
+				),
+			},
+		},
+		"setting value with GET and NX options get value when NX option can set the value": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-value-nx" + uniqueSuffix),
+						protocol.NewBulkString("first value"),
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("NX"),
+					},
+					nil,
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-value-nx" + uniqueSuffix),
+						protocol.NewBulkString("second value"),
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("NX"),
+					},
+					protocol.NewBulkString("first value"),
 				),
 				call.NewFromData(
 					[]protocol.Data{
@@ -137,6 +168,35 @@ func TestSettingStringValues(t *testing.T) {
 						protocol.NewBulkString("XX"),
 					},
 					protocol.NewSimpleString("OK"),
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("key-with-value-xx" + uniqueSuffix),
+					},
+					protocol.NewBulkString("second value"),
+				),
+			},
+		},
+		"setting value with GEt and XX option return old value and sets the value if key has a current value": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-value-xx" + uniqueSuffix),
+						protocol.NewBulkString("first value"),
+					},
+					protocol.NewSimpleString("OK"),
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-value-xx" + uniqueSuffix),
+						protocol.NewBulkString("second value"),
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("XX"),
+					},
+					protocol.NewBulkString("first value"),
 				),
 				call.NewFromData(
 					[]protocol.Data{

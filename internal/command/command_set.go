@@ -67,6 +67,9 @@ func (cmd SetCommand) Execute(s *store.Store) (protocol.Data, error) {
 	oldValue, exists := s.Get(cmd.key)
 
 	if exists && cmd.existenceOption == existenceOptionSetOnlyIfMissing {
+		if cmd.get {
+			return protocol.NewBulkString(oldValue), nil
+		}
 		return nil, nil
 	}
 	if !exists && cmd.existenceOption == existenceOptionSetOnlyIfPresent {
