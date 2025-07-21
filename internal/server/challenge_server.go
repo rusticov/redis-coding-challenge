@@ -11,9 +11,18 @@ import (
 	"redis-challenge/internal/store"
 )
 
+type State int
+
+const (
+	StatePortClosed State = iota + 1
+)
+
+type MonitorChannel chan State
+
 type ChallengeServer struct {
 	socket         net.Listener
 	cancelFunction context.CancelFunc
+	monitor        MonitorChannel
 }
 
 func (c *ChallengeServer) Address() string {
@@ -22,10 +31,20 @@ func (c *ChallengeServer) Address() string {
 
 func (c *ChallengeServer) Close() error {
 	c.cancelFunction()
-	return c.socket.Close()
+	err := c.socket.Close()
+
+	if c.monitor != nil {
+		c.monitor <- StatePortClosed
+	}
+
+	return err
 }
 
-func NewChallengeServer(port int, s *store.Store) (Server, error) {
+func (c *ChallengeServer) AddMonitor(monitor MonitorChannel) {
+	c.monitor = monitor
+}
+
+func NewChallengeServer(port int, s *store.Store) (*ChallengeServer, error) {
 	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return nil, err
