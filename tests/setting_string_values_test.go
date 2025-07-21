@@ -1,6 +1,7 @@
 package tests_test
 
 import (
+	nanoid "github.com/matoous/go-nanoid/v2"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/tests"
 	"redis-challenge/tests/call"
@@ -14,13 +15,15 @@ type executionTestCases map[string]struct {
 
 func TestSettingStringValues(t *testing.T) {
 
+	uniqueSuffix := "-" + nanoid.Must(6)
+
 	testCases := executionTestCases{
-		"getting value that has been set (key-set-with-value)": {
+		"getting value that has been set (key-with-value)": {
 			calls: []call.DataCall{
 				call.NewFromData(
 					[]protocol.Data{
 						protocol.NewBulkString("SET"),
-						protocol.NewBulkString("key-set-with-value"),
+						protocol.NewBulkString("key-with-value" + uniqueSuffix),
 						protocol.NewBulkString("value 1"),
 					},
 					protocol.NewSimpleString("OK"),
@@ -28,23 +31,22 @@ func TestSettingStringValues(t *testing.T) {
 				call.NewFromData(
 					[]protocol.Data{
 						protocol.NewBulkString("GET"),
-						protocol.NewBulkString("key-set-with-value"),
+						protocol.NewBulkString("key-with-value" + uniqueSuffix),
 					},
 					protocol.NewBulkString("value 1"),
 				),
 			},
 		},
-		"getting value that has been set (key-with-no-value)": {
+		"getting value that has been set (key-no-value)": {
 			calls: []call.DataCall{
 				call.NewFromData(
 					[]protocol.Data{
 						protocol.NewBulkString("GET"),
-						protocol.NewBulkString("key-with-no-value"),
+						protocol.NewBulkString("key-no-value" + uniqueSuffix),
 					},
 					nil,
 				),
 			},
-			driverChoice: tests.UseRealRedisServer,
 		},
 	}
 

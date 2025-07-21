@@ -22,6 +22,9 @@ type GetCommand struct {
 }
 
 func (cmd GetCommand) Execute(s *store.Store) (protocol.Data, error) {
-	value, _ := s.Get(cmd.key)
+	value, exists := s.Get(cmd.key)
+	if !exists {
+		return nil, nil
+	}
 	return protocol.NewBulkString(value), nil
 }
