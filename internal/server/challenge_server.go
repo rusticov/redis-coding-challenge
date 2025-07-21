@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"log/slog"
 	"net"
 	"redis-challenge/internal/command"
@@ -24,8 +25,8 @@ func (c *ChallengeServer) Close() error {
 	return c.socket.Close()
 }
 
-func NewChallengeServer(s *store.Store) (Server, error) {
-	socket, err := net.Listen("tcp", ":0")
+func NewChallengeServer(port int, s *store.Store) (Server, error) {
+	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return nil, err
 	}

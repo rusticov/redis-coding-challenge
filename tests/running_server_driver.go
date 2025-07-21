@@ -64,7 +64,7 @@ func createTestServer(t testing.TB, variant ...ServerVariant) server.Server {
 	case UseRealRedisServer:
 		return NewRealRedisServer()
 	default:
-		challengeServer, err := server.NewChallengeServer(store.New())
+		challengeServer, err := server.NewChallengeServer(0, store.New())
 		require.NoError(t, err)
 		return challengeServer
 	}
