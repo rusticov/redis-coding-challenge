@@ -28,12 +28,12 @@ func validateSet(arguments []protocol.Data) (Command, protocol.Data) {
 			case "GET":
 				cmd.get = true
 			case "NX":
-				if cmd.existenceOption != valueExistenceOptionNone {
+				if cmd.existenceOption != existenceOptionNone {
 					return nil, NewSyntaxError()
 				}
 				cmd.existenceOption = existenceOptionSetOnlyIfMissing
 			case "XX":
-				if cmd.existenceOption != valueExistenceOptionNone {
+				if cmd.existenceOption != existenceOptionNone {
 					return nil, NewSyntaxError()
 				}
 				cmd.existenceOption = existenceOptionSetOnlyIfPresent
@@ -53,7 +53,7 @@ type existenceOption string
 const (
 	existenceOptionSetOnlyIfMissing existenceOption = "NX"
 	existenceOptionSetOnlyIfPresent existenceOption = "XX"
-	valueExistenceOptionNone        existenceOption = ""
+	existenceOptionNone             existenceOption = ""
 )
 
 type SetCommand struct {
