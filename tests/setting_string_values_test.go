@@ -18,7 +18,7 @@ func TestSettingStringValues(t *testing.T) {
 	uniqueSuffix := "-" + nanoid.Must(6)
 
 	testCases := executionTestCases{
-		"getting value that has been set (key-with-value)": {
+		"getting value that has been set": {
 			calls: []call.DataCall{
 				call.NewFromData(
 					[]protocol.Data{
@@ -37,7 +37,7 @@ func TestSettingStringValues(t *testing.T) {
 				),
 			},
 		},
-		"getting value that has been set (key-no-value)": {
+		"getting value that has not been set": {
 			calls: []call.DataCall{
 				call.NewFromData(
 					[]protocol.Data{
@@ -48,7 +48,7 @@ func TestSettingStringValues(t *testing.T) {
 				),
 			},
 		},
-		"getting value that has been set (key-with-value-get)": {
+		"setting value with the get option returns the previous value": {
 			calls: []call.DataCall{
 				call.NewFromData(
 					[]protocol.Data{
