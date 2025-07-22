@@ -63,7 +63,7 @@ type SetCommand struct {
 	existenceOption existenceOption
 }
 
-func (cmd SetCommand) Execute(s *store.Store) (protocol.Data, error) {
+func (cmd SetCommand) Execute(s store.Store) (protocol.Data, error) {
 	oldValue, exists := s.Get(cmd.key)
 
 	if exists && cmd.existenceOption == existenceOptionSetOnlyIfMissing {
@@ -76,7 +76,17 @@ func (cmd SetCommand) Execute(s *store.Store) (protocol.Data, error) {
 		return nil, nil
 	}
 
-	s.Add(cmd.key, cmd.value)
+	if exists {
+		swapped := s.CompareAndSwap(cmd.key, oldValue, cmd.value)
+		if !swapped {
+			return nil, nil
+		}
+	} else {
+		_, loaded := s.LoadOrStore(cmd.key, cmd.value)
+		if loaded {
+			return nil, nil
+		}
+	}
 
 	if cmd.get {
 		if !exists {

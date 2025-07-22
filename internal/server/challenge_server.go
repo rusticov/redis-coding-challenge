@@ -44,7 +44,7 @@ func (c *ChallengeServer) AddMonitor(monitor MonitorChannel) {
 	c.monitor = monitor
 }
 
-func NewChallengeServer(port int, s *store.Store) (*ChallengeServer, error) {
+func NewChallengeServer(port int, s store.Store) (*ChallengeServer, error) {
 	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func NewChallengeServer(port int, s *store.Store) (*ChallengeServer, error) {
 	}, nil
 }
 
-func connectionHandler(connection net.Conn, s *store.Store) {
+func connectionHandler(connection net.Conn, s store.Store) {
 	defer func() {
 		err := connection.Close()
 		if err != nil {
@@ -112,7 +112,7 @@ func connectionHandler(connection net.Conn, s *store.Store) {
 	}
 }
 
-func executeCommand(protocolData protocol.Data, buffer bytes.Buffer, s *store.Store) protocol.Data {
+func executeCommand(protocolData protocol.Data, buffer bytes.Buffer, s store.Store) protocol.Data {
 	parsedCommand, commandError := command.Validate(protocolData)
 
 	var response protocol.Data

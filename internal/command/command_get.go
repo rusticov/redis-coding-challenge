@@ -21,7 +21,7 @@ type GetCommand struct {
 	key string
 }
 
-func (cmd GetCommand) Execute(s *store.Store) (protocol.Data, error) {
+func (cmd GetCommand) Execute(s store.Store) (protocol.Data, error) {
 	value, exists := s.Get(cmd.key)
 	if !exists {
 		return nil, nil

@@ -6,7 +6,7 @@ import (
 )
 
 type Command interface {
-	Execute(s *store.Store) (protocol.Data, error)
+	Execute(s store.Store) (protocol.Data, error)
 }
 
 type Data struct {

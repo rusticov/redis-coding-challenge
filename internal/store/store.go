@@ -4,15 +4,27 @@ import (
 	"sync"
 )
 
-type Store struct {
+type Store interface {
+	Get(key string) (string, bool)
+	CompareAndSwap(key string, oldValue, newValue string) (swapped bool)
+	LoadOrStore(key string, defaultValue string) (string, bool)
+}
+
+type InMemoryStore struct {
 	values *sync.Map
 }
 
-func (s *Store) Add(key string, value string) {
-	s.values.Store(key, value)
+func (s *InMemoryStore) CompareAndSwap(key string, oldValue string, newValue string) (swapped bool) {
+	swapped = s.values.CompareAndSwap(key, oldValue, newValue)
+	return
 }
 
-func (s *Store) Get(key string) (string, bool) {
+func (s *InMemoryStore) LoadOrStore(key string, defaultValue string) (string, bool) {
+	value, loaded := s.values.LoadOrStore(key, defaultValue)
+	return value.(string), loaded
+}
+
+func (s *InMemoryStore) Get(key string) (string, bool) {
 	value, ok := s.values.Load(key)
 
 	if !ok {
@@ -21,6 +33,6 @@ func (s *Store) Get(key string) (string, bool) {
 	return value.(string), true
 }
 
-func New() *Store {
-	return &Store{values: &sync.Map{}}
+func New() *InMemoryStore {
+	return &InMemoryStore{values: &sync.Map{}}
 }

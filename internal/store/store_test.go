@@ -8,13 +8,52 @@ import (
 
 func TestStore(t *testing.T) {
 
-	t.Run("set values can be read back", func(t *testing.T) {
+	t.Run("newly sets values can be read back", func(t *testing.T) {
 		s := store.New()
 
-		s.Add("key", "value")
+		value, loaded := s.LoadOrStore("key", "value")
+		assert.False(t, loaded)
+		assert.Equal(t, "value", value)
+
 		value, exists := s.Get("key")
 
 		assert.Equal(t, "value", value)
+		assert.True(t, exists)
+	})
+
+	t.Run("setting a value that is already set will load existing value", func(t *testing.T) {
+		s := store.New()
+
+		s.LoadOrStore("key", "value 1")
+		value, loaded := s.LoadOrStore("key", "value 2")
+		assert.True(t, loaded)
+		assert.Equal(t, "value 1", value, "should return the existing value as one has been set")
+
+		value, exists := s.Get("key")
+
+		assert.Equal(t, "value 1", value)
+		assert.True(t, exists)
+	})
+
+	t.Run("values can be updated if the current value is given as the old value", func(t *testing.T) {
+		s := store.New()
+
+		s.LoadOrStore("key", "value 1")
+		s.CompareAndSwap("key", "value 1", "value 2")
+		value, exists := s.Get("key")
+
+		assert.Equal(t, "value 2", value)
+		assert.True(t, exists)
+	})
+
+	t.Run("values is not updated if the old value is different to the current value", func(t *testing.T) {
+		s := store.New()
+
+		s.LoadOrStore("key", "value 1")
+		s.CompareAndSwap("key", "not current value", "value 2")
+		value, exists := s.Get("key")
+
+		assert.Equal(t, "value 1", value)
 		assert.True(t, exists)
 	})
 

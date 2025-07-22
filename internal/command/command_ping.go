@@ -23,6 +23,6 @@ type PingCommand struct {
 	response protocol.Data
 }
 
-func (cmd PingCommand) Execute(_ *store.Store) (protocol.Data, error) {
+func (cmd PingCommand) Execute(_ store.Store) (protocol.Data, error) {
 	return cmd.response, nil
 }
