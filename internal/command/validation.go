@@ -15,6 +15,7 @@ var validators = map[string]validator{
 	"GET":    validateGet,
 	"LPUSH":  validateLPush,
 	"LRANGE": validateLRange,
+	"RPUSH":  validateRPush,
 	"SET":    validateSet,
 }
 
