@@ -66,9 +66,14 @@ type SetCommand struct {
 func (cmd SetCommand) Execute(s store.Store) (protocol.Data, error) {
 	oldValue, exists := s.Get(cmd.key)
 
+	oldText, isText := parseStoreValueAsString(oldValue) // TODO validate setting against a list
+	if !isText {
+		return nil, nil
+	}
+
 	if exists && cmd.existenceOption == existenceOptionSetOnlyIfMissing {
 		if cmd.get {
-			return protocol.NewBulkString(oldValue), nil
+			return protocol.NewBulkString(oldText), nil
 		}
 		return nil, nil
 	}
@@ -92,8 +97,18 @@ func (cmd SetCommand) Execute(s store.Store) (protocol.Data, error) {
 		if !exists {
 			return nil, nil
 		}
-		return protocol.NewBulkString(oldValue), nil
+		return protocol.NewBulkString(oldText), nil
 	}
 
 	return protocol.NewSimpleString("OK"), nil
+}
+
+func parseStoreValueAsString(data any) (string, bool) {
+	if data == nil {
+		return "", true
+	}
+	if text, ok := data.(string); ok {
+		return text, true
+	}
+	return "", false
 }

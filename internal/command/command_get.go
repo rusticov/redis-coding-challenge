@@ -26,5 +26,5 @@ func (cmd GetCommand) Execute(s store.Store) (protocol.Data, error) {
 	if !exists {
 		return nil, nil
 	}
-	return protocol.NewBulkString(value), nil
+	return protocol.NewBulkString(value.(string)), nil // TODO need to have lists
 }

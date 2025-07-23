@@ -33,5 +33,7 @@ type LPushCommand struct {
 
 func (cmd LPushCommand) Execute(s store.Store) (protocol.Data, error) {
 	count := len(cmd.values)
+	//value, _ := s.Get(cmd.key)
+
 	return protocol.NewSimpleInteger(int64(count)), nil
 }
