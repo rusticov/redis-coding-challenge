@@ -1,4 +1,4 @@
-package tests_test
+package command_test
 
 import (
 	nanoid "github.com/matoous/go-nanoid/v2"
