@@ -13,6 +13,7 @@ var validators = map[string]validator{
 	"EXISTS": validateExists,
 	"INCR":   validateIncr,
 	"GET":    validateGet,
+	"LPUSH":  validateLPush,
 	"SET":    validateSet,
 }
 
