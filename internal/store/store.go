@@ -8,6 +8,7 @@ type Store interface {
 	Get(key string) (string, bool)
 	CompareAndSwap(key string, oldValue, newValue string) (swapped bool)
 	LoadOrStore(key string, defaultValue string) (string, bool)
+	Delete(key string) bool
 }
 
 type InMemoryStore struct {
@@ -22,6 +23,11 @@ func (s *InMemoryStore) CompareAndSwap(key string, oldValue string, newValue str
 func (s *InMemoryStore) LoadOrStore(key string, defaultValue string) (string, bool) {
 	value, loaded := s.values.LoadOrStore(key, defaultValue)
 	return value.(string), loaded
+}
+
+func (s *InMemoryStore) Delete(key string) bool {
+	_, existed := s.values.LoadAndDelete(key)
+	return existed
 }
 
 func (s *InMemoryStore) Get(key string) (string, bool) {

@@ -200,6 +200,23 @@ func (s *waitingStore) LoadOrStore(key string, defaultValue string) (string, boo
 	return value, loaded
 }
 
+func (s *waitingStore) Delete(key string) bool {
+	if s.beforeWrite != nil {
+		s.beforeWrite.Done()
+	}
+	if s.waitToWrite != nil {
+		s.waitToWrite.Wait()
+	}
+
+	existed := s.store.Delete(key)
+
+	if s.afterWriting != nil {
+		s.afterWriting.Done()
+	}
+
+	return existed
+}
+
 func (s *waitingStore) Get(key string) (string, bool) {
 	if s.waitBeforeRead != nil {
 		s.waitBeforeRead.Wait()
