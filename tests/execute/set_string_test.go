@@ -178,7 +178,7 @@ func TestSettingStringValues(t *testing.T) {
 				),
 			},
 		},
-		"setting value with GEt and XX option return old value and sets the value if key has a current value": {
+		"setting value with GET and XX option return old value and sets the value if key has a current value": {
 			calls: []call.DataCall{
 				call.NewFromData(
 					[]protocol.Data{
