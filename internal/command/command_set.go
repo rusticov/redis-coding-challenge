@@ -3,6 +3,7 @@ package command
 import (
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
+	"strconv"
 )
 
 func validateSet(arguments []protocol.Data) (Command, protocol.Data) {
@@ -22,8 +23,20 @@ func validateSet(arguments []protocol.Data) (Command, protocol.Data) {
 		value: string(arguments[1].(protocol.BulkString)),
 	}
 
+	var needTimeValue bool
+
 	for _, arg := range arguments[2:] {
 		if bulkText, ok := arg.(protocol.BulkString); ok {
+			if needTimeValue {
+				expiry, err := strconv.ParseInt(string(bulkText), 10, 64)
+				if err != nil {
+					return nil, NewSyntaxError()
+				}
+				cmd.expiry = expiry
+				needTimeValue = false
+				continue
+			}
+
 			switch string(bulkText) {
 			case "GET":
 				cmd.get = true
@@ -37,12 +50,45 @@ func validateSet(arguments []protocol.Data) (Command, protocol.Data) {
 					return nil, NewSyntaxError()
 				}
 				cmd.existenceOption = existenceOptionSetOnlyIfPresent
+			case "EX":
+				if cmd.expiryOption != expiryOptionNone {
+					return nil, NewSyntaxError()
+				}
+				cmd.expiryOption = expiryOptionExpirySeconds
+				needTimeValue = true
+			case "PX":
+				if cmd.expiryOption != expiryOptionNone {
+					return nil, NewSyntaxError()
+				}
+				cmd.expiryOption = expiryOptionExpiryMilliseconds
+				needTimeValue = true
+			case "EXAT":
+				if cmd.expiryOption != expiryOptionNone {
+					return nil, NewSyntaxError()
+				}
+				cmd.expiryOption = expiryOptionExpiryUnixTimeInSeconds
+				needTimeValue = true
+			case "PXAT":
+				if cmd.expiryOption != expiryOptionNone {
+					return nil, NewSyntaxError()
+				}
+				cmd.expiryOption = expiryOptionExpiryUnixTimeInMilliseconds
+				needTimeValue = true
+			case "KEEPTTL":
+				if cmd.expiryOption != expiryOptionNone {
+					return nil, NewSyntaxError()
+				}
+				cmd.expiryOption = expiryOptionExpiryKeepTTL
 			default:
 				return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'set' command")
 			}
 		} else {
 			return nil, NewWrongDataTypeError(arg, protocol.BulkStringSymbol)
 		}
+	}
+
+	if needTimeValue {
+		return nil, NewSyntaxError()
 	}
 
 	return cmd, nil
@@ -56,11 +102,24 @@ const (
 	existenceOptionNone             existenceOption = ""
 )
 
+type expiryOption string
+
+const (
+	expiryOptionNone                         expiryOption = ""
+	expiryOptionExpirySeconds                expiryOption = "EX"
+	expiryOptionExpiryMilliseconds           expiryOption = "PX"
+	expiryOptionExpiryUnixTimeInSeconds      expiryOption = "EXAT"
+	expiryOptionExpiryUnixTimeInMilliseconds expiryOption = "PXAT"
+	expiryOptionExpiryKeepTTL                expiryOption = "KEEPTTL"
+)
+
 type SetCommand struct {
 	key             string
 	value           string
 	get             bool
 	existenceOption existenceOption
+	expiryOption    expiryOption
+	expiry          int64
 }
 
 func (cmd SetCommand) Execute(s store.Store) (protocol.Data, error) {
