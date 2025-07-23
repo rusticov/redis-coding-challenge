@@ -6,13 +6,14 @@ import (
 )
 
 var validators = map[string]validator{
-	"PING": validatePing,
-	"ECHO": validateEcho,
-	"DECR": validateDecr,
-	"DEL":  validateDel,
-	"INCR": validateIncr,
-	"GET":  validateGet,
-	"SET":  validateSet,
+	"PING":   validatePing,
+	"ECHO":   validateEcho,
+	"DECR":   validateDecr,
+	"DEL":    validateDel,
+	"EXISTS": validateExists,
+	"INCR":   validateIncr,
+	"GET":    validateGet,
+	"SET":    validateSet,
 }
 
 type validator func(arguments []protocol.Data) (Command, protocol.Data)
