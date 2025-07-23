@@ -11,7 +11,14 @@ The following Redis commands are currently implemented:
 * PING
 * ECHO
 * GET
-* SET with the options GET, NX and XX with TTL to follow
+* SET
+* DEL
+* EXISTS
+* INCR
+* DECR
+* LPUSH
+* RPUSH
+* LRANGE
 
 ## Build and Running Server
 
