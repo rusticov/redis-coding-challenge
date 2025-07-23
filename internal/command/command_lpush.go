@@ -1,6 +1,7 @@
 package command
 
 import (
+	"redis-challenge/internal/command/list"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
 )
@@ -33,7 +34,13 @@ type LPushCommand struct {
 
 func (cmd LPushCommand) Execute(s store.Store) (protocol.Data, error) {
 	count := len(cmd.values)
-	//value, _ := s.Get(cmd.key)
+	oldValues, _ := s.Get(cmd.key)
+
+	newList, err := list.LeftPushToOldList(cmd.values, oldValues)
+	if err != nil {
+		return nil, err
+	}
+	s.LoadOrStore(cmd.key, newList) // TODO handle failure to add
 
 	return protocol.NewSimpleInteger(int64(count)), nil
 }

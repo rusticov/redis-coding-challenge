@@ -22,7 +22,7 @@ func (s *InMemoryStore) CompareAndSwap(key string, oldValue, newValue any) (swap
 
 func (s *InMemoryStore) LoadOrStore(key string, defaultValue any) (any, bool) {
 	value, loaded := s.values.LoadOrStore(key, defaultValue)
-	return value.(string), loaded
+	return value, loaded
 }
 
 func (s *InMemoryStore) Delete(key string) bool {
