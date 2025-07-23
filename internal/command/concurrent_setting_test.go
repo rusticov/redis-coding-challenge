@@ -10,7 +10,9 @@ import (
 	"testing"
 )
 
-func TestConcurrentAdding(t *testing.T) {
+// TestSetCommandWithStoreLatency checks that calls are resilient to the order being made to be store being
+// manipulated by latency.  It does not exercise contention within the store.  It is not enough to prove thread safety.
+func TestSetCommandWithStoreLatency(t *testing.T) {
 
 	t.Run("first write wins when there are competing SET commands with NX option", func(t *testing.T) {
 		// Given a pair of commands SET values with NX and GET
