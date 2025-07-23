@@ -51,34 +51,34 @@ func validateSet(arguments []protocol.Data) (Command, protocol.Data) {
 				}
 				cmd.existenceOption = existenceOptionSetOnlyIfPresent
 			case "EX":
-				if cmd.expiryOption != expiryOptionNone {
+				if cmd.expiryOption != store.ExpiryOptionNone {
 					return nil, NewSyntaxError()
 				}
-				cmd.expiryOption = expiryOptionExpirySeconds
+				cmd.expiryOption = store.ExpiryOptionExpirySeconds
 				needTimeValue = true
 			case "PX":
-				if cmd.expiryOption != expiryOptionNone {
+				if cmd.expiryOption != store.ExpiryOptionNone {
 					return nil, NewSyntaxError()
 				}
-				cmd.expiryOption = expiryOptionExpiryMilliseconds
+				cmd.expiryOption = store.ExpiryOptionExpiryMilliseconds
 				needTimeValue = true
 			case "EXAT":
-				if cmd.expiryOption != expiryOptionNone {
+				if cmd.expiryOption != store.ExpiryOptionNone {
 					return nil, NewSyntaxError()
 				}
-				cmd.expiryOption = expiryOptionExpiryUnixTimeInSeconds
+				cmd.expiryOption = store.ExpiryOptionExpiryUnixTimeInSeconds
 				needTimeValue = true
 			case "PXAT":
-				if cmd.expiryOption != expiryOptionNone {
+				if cmd.expiryOption != store.ExpiryOptionNone {
 					return nil, NewSyntaxError()
 				}
-				cmd.expiryOption = expiryOptionExpiryUnixTimeInMilliseconds
+				cmd.expiryOption = store.ExpiryOptionExpiryUnixTimeInMilliseconds
 				needTimeValue = true
 			case "KEEPTTL":
-				if cmd.expiryOption != expiryOptionNone {
+				if cmd.expiryOption != store.ExpiryOptionNone {
 					return nil, NewSyntaxError()
 				}
-				cmd.expiryOption = expiryOptionExpiryKeepTTL
+				cmd.expiryOption = store.ExpiryOptionExpiryKeepTTL
 			default:
 				return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'set' command")
 			}
@@ -102,23 +102,12 @@ const (
 	existenceOptionNone             existenceOption = ""
 )
 
-type expiryOption string
-
-const (
-	expiryOptionNone                         expiryOption = ""
-	expiryOptionExpirySeconds                expiryOption = "EX"
-	expiryOptionExpiryMilliseconds           expiryOption = "PX"
-	expiryOptionExpiryUnixTimeInSeconds      expiryOption = "EXAT"
-	expiryOptionExpiryUnixTimeInMilliseconds expiryOption = "PXAT"
-	expiryOptionExpiryKeepTTL                expiryOption = "KEEPTTL"
-)
-
 type SetCommand struct {
 	key             string
 	value           string
 	get             bool
 	existenceOption existenceOption
-	expiryOption    expiryOption
+	expiryOption    store.ExpiryOption
 	expiry          int64
 }
 
