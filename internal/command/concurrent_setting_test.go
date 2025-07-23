@@ -168,7 +168,7 @@ type waitingStore struct {
 	afterWriting   *sync.WaitGroup
 }
 
-func (s *waitingStore) CompareAndSwap(key string, oldValue, newValue any) (swapped bool) {
+func (s *waitingStore) CompareAndSwap(key string, oldValue, newValue store.Entry) (swapped bool) {
 	if s.beforeWrite != nil {
 		s.beforeWrite.Done()
 	}
@@ -185,7 +185,7 @@ func (s *waitingStore) CompareAndSwap(key string, oldValue, newValue any) (swapp
 	return
 }
 
-func (s *waitingStore) LoadOrStore(key string, defaultValue any) (any, bool) {
+func (s *waitingStore) LoadOrStore(key string, defaultValue store.Entry) (store.Entry, bool) {
 	if s.beforeWrite != nil {
 		s.beforeWrite.Done()
 	}
@@ -219,7 +219,7 @@ func (s *waitingStore) Delete(key string) bool {
 	return existed
 }
 
-func (s *waitingStore) Get(key string) (any, bool) {
+func (s *waitingStore) Get(key string) (store.Entry, bool) {
 	if s.waitBeforeRead != nil {
 		s.waitBeforeRead.Wait()
 	}

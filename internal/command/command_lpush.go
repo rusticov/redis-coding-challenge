@@ -36,11 +36,11 @@ func (cmd LPushCommand) Execute(s store.Store) (protocol.Data, error) {
 	count := len(cmd.values)
 	oldValues, _ := s.Get(cmd.key)
 
-	newList, err := list.LeftPushToOldList(cmd.values, oldValues)
+	newList, err := list.LeftPushToOldList(cmd.values, oldValues.Data())
 	if err != nil {
 		return nil, err
 	}
-	s.LoadOrStore(cmd.key, newList) // TODO handle failure to add
+	s.LoadOrStore(cmd.key, store.NewEntry(newList)) // TODO handle failure to add
 
 	return protocol.NewSimpleInteger(int64(count)), nil
 }

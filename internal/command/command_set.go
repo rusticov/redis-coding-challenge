@@ -129,13 +129,15 @@ func (cmd SetCommand) Execute(s store.Store) (protocol.Data, error) {
 		return nil, nil
 	}
 
+	entry := store.NewEntryWithExpiry(cmd.value, cmd.expiryOption, cmd.expiry)
+
 	if exists {
-		swapped := s.CompareAndSwap(cmd.key, oldValue, cmd.value)
+		swapped := s.CompareAndSwap(cmd.key, oldValue, entry)
 		if !swapped {
 			return nil, nil
 		}
 	} else {
-		_, loaded := s.LoadOrStore(cmd.key, cmd.value)
+		_, loaded := s.LoadOrStore(cmd.key, entry)
 		if loaded {
 			return nil, nil
 		}
@@ -151,7 +153,8 @@ func (cmd SetCommand) Execute(s store.Store) (protocol.Data, error) {
 	return protocol.NewSimpleString("OK"), nil
 }
 
-func parseStoreValueAsString(data any) (string, bool) {
+func parseStoreValueAsString(value store.Entry) (string, bool) {
+	data := value.Data()
 	if data == nil {
 		return "", true
 	}

@@ -5,9 +5,9 @@ import (
 )
 
 type Store interface {
-	Get(key string) (any, bool)
-	CompareAndSwap(key string, oldValue, newValue any) (swapped bool)
-	LoadOrStore(key string, defaultValue any) (any, bool)
+	Get(key string) (Entry, bool)
+	CompareAndSwap(key string, oldValue, newValue Entry) (swapped bool)
+	LoadOrStore(key string, defaultValue Entry) (Entry, bool)
 	Delete(key string) bool
 }
 
@@ -15,14 +15,14 @@ type InMemoryStore struct {
 	values *sync.Map
 }
 
-func (s *InMemoryStore) CompareAndSwap(key string, oldValue, newValue any) (swapped bool) {
+func (s *InMemoryStore) CompareAndSwap(key string, oldValue, newValue Entry) (swapped bool) {
 	swapped = s.values.CompareAndSwap(key, oldValue, newValue)
 	return
 }
 
-func (s *InMemoryStore) LoadOrStore(key string, defaultValue any) (any, bool) {
+func (s *InMemoryStore) LoadOrStore(key string, defaultValue Entry) (Entry, bool) {
 	value, loaded := s.values.LoadOrStore(key, defaultValue)
-	return value, loaded
+	return value.(Entry), loaded
 }
 
 func (s *InMemoryStore) Delete(key string) bool {
@@ -30,13 +30,13 @@ func (s *InMemoryStore) Delete(key string) bool {
 	return existed
 }
 
-func (s *InMemoryStore) Get(key string) (any, bool) {
+func (s *InMemoryStore) Get(key string) (Entry, bool) {
 	value, ok := s.values.Load(key)
 
 	if !ok {
-		return nil, false
+		return Entry{}, false
 	}
-	return value, true
+	return value.(Entry), true
 }
 
 func New() *InMemoryStore {
