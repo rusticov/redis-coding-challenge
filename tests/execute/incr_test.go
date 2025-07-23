@@ -108,7 +108,6 @@ func TestIncrCommand(t *testing.T) {
 					protocol.NewBulkString("9223372036854775808"),
 				),
 			},
-			driverChoice: tests.UseRealRedisServer,
 		},
 	}
 
