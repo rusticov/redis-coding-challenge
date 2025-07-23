@@ -9,6 +9,7 @@ var validators = map[string]validator{
 	"PING": validatePing,
 	"ECHO": validateEcho,
 	"DEL":  validateDel,
+	"INCR": validateIncr,
 	"GET":  validateGet,
 	"SET":  validateSet,
 }
