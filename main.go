@@ -9,9 +9,11 @@ import (
 )
 
 func main() {
+	fmt.Printf("*** Starting server\n")
 	dataStore := store.New()
 	srv, err := server.NewChallengeServer(0, dataStore)
 	if err != nil {
+		fmt.Printf("*** server error %v", err)
 		slog.Error(fmt.Sprintf("Failed to create server: %v", err))
 		os.Exit(1)
 	}
