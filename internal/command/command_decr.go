@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func validateIncr(arguments []protocol.Data) (Command, protocol.Data) {
+func validateDecr(arguments []protocol.Data) (Command, protocol.Data) {
 	var key string
 
 	if len(arguments) > 0 {
@@ -25,22 +25,22 @@ func validateIncr(arguments []protocol.Data) (Command, protocol.Data) {
 	}
 
 	if len(arguments) != 1 {
-		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'incr' command")
+		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'decr' command")
 	}
 
-	return IncrCommand{key: key}, nil
+	return DecrCommand{key: key}, nil
 }
 
-type IncrCommand struct {
+type DecrCommand struct {
 	key string
 }
 
-func (cmd IncrCommand) Execute(s store.Store) (protocol.Data, error) {
+func (cmd DecrCommand) Execute(s store.Store) (protocol.Data, error) {
 	textValue, exists := s.Get(cmd.key)
 
 	if !exists {
-		s.LoadOrStore(cmd.key, "1") // TODO test failure to set here
-		return protocol.NewSimpleInteger(1), nil
+		s.LoadOrStore(cmd.key, "-1") // TODO test failure to set here
+		return protocol.NewSimpleInteger(-1), nil
 	}
 
 	var value int64
@@ -51,7 +51,7 @@ func (cmd IncrCommand) Execute(s store.Store) (protocol.Data, error) {
 			return protocol.NewSimpleError("ERR value is not an integer or out of range"), nil
 		}
 	}
-	value++
+	value--
 
 	s.CompareAndSwap(cmd.key, textValue, strconv.FormatInt(value, 10)) // TODO test failure to set here
 

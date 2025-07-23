@@ -209,6 +209,64 @@ func TestCommandValidation(t *testing.T) {
 		},
 	}
 
+	decrCommandTestCases := validationTestCases{
+		"decr command with no arguments has the wrong length": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("DECR"),
+					},
+					protocol.NewSimpleError("ERR wrong number of arguments for 'decr' command"),
+				),
+			},
+		},
+		"decr command with simple string key to decrement has bad type": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("DECR"),
+						protocol.NewSimpleString("key"),
+					},
+					protocol.NewSimpleError("ERR Protocol error: expected '$', got '+'"),
+				),
+			},
+		},
+		"decr command with bulk string key to decrement is ok": {
+			calls: []call.DataCall{
+				call.NewFromDataWithoutError(
+					[]protocol.Data{
+						protocol.NewBulkString("DECR"),
+						protocol.NewBulkString("key"),
+					},
+				),
+			},
+		},
+		"decr command with bulk string key and integer has the wrong type": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("DECR"),
+						protocol.NewBulkString("key"),
+						protocol.NewSimpleInteger(1),
+					},
+					protocol.NewSimpleError("ERR Protocol error: expected '$', got ':'"),
+				),
+			},
+		},
+		"decr command with 2 bulk string key to decrement has wrong length": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("DECR"),
+						protocol.NewBulkString("key1"),
+						protocol.NewBulkString("key2"),
+					},
+					protocol.NewSimpleError("ERR wrong number of arguments for 'decr' command"),
+				),
+			},
+		},
+	}
+
 	incrCommandTestCases := validationTestCases{
 		"incr command with no arguments has the wrong length": {
 			calls: []call.DataCall{
@@ -480,6 +538,7 @@ func TestCommandValidation(t *testing.T) {
 		pingTestCases,
 		echoTestCases,
 		delCommandTestCases,
+		decrCommandTestCases,
 		incrCommandTestCases,
 		getCommandTestCases,
 		setCommandTestCases,
