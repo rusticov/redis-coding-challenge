@@ -112,16 +112,19 @@ type SetCommand struct {
 }
 
 func (cmd SetCommand) Execute(s store.Store) (protocol.Data, error) {
-	oldValue, exists := s.Get(cmd.key)
-
-	oldText, isText := parseStoreValueAsString(oldValue) // TODO validate setting against a list
-	if !isText {
-		return nil, nil
+	exists := s.Exists(cmd.key)
+	var oldValue protocol.Data
+	if exists && cmd.get {
+		oldText, err := s.ReadString(cmd.key)
+		if err != nil {
+			return nil, err
+		}
+		oldValue = protocol.NewBulkString(oldText)
 	}
 
 	if exists && cmd.existenceOption == existenceOptionSetOnlyIfMissing {
 		if cmd.get {
-			return protocol.NewBulkString(oldText), nil
+			return oldValue, nil
 		}
 		return nil, nil
 	}
@@ -129,37 +132,10 @@ func (cmd SetCommand) Execute(s store.Store) (protocol.Data, error) {
 		return nil, nil
 	}
 
-	entry := store.NewEntryWithExpiry(cmd.value, cmd.expiryOption, cmd.expiry)
-
-	if exists {
-		swapped := s.CompareAndSwap(cmd.key, oldValue, entry)
-		if !swapped {
-			return nil, nil
-		}
-	} else {
-		_, loaded := s.LoadOrStore(cmd.key, entry)
-		if loaded {
-			return nil, nil
-		}
-	}
+	s.Write(cmd.key, cmd.value)
 
 	if cmd.get {
-		if !exists {
-			return nil, nil
-		}
-		return protocol.NewBulkString(oldText), nil
+		return oldValue, nil
 	}
-
 	return protocol.NewSimpleString("OK"), nil
-}
-
-func parseStoreValueAsString(value store.Entry) (string, bool) {
-	data := value.Data()
-	if data == nil {
-		return "", true
-	}
-	if text, ok := data.(string); ok {
-		return text, true
-	}
-	return "", false
 }
