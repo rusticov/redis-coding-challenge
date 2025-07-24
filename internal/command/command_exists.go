@@ -30,7 +30,7 @@ type ExistsCommand struct {
 func (cmd ExistsCommand) Execute(s store.Store) (protocol.Data, error) {
 	count := 0
 	for _, key := range cmd.keys {
-		if _, exists := s.Get(key); exists {
+		if s.Exists(key) {
 			count++
 		}
 	}

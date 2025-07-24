@@ -8,6 +8,7 @@ type Store interface {
 	LoadOrStore(key string, defaultValue Entry) (Entry, bool)
 	Delete(key string) bool
 
+	Exists(key string) bool
 	Write(key string, value any)
 	ReadString(key string) (string, error)
 }
@@ -16,7 +17,7 @@ type InMemoryStore struct {
 	keyValues map[string]Entry
 }
 
-func (s *InMemoryStore) exists(key string) bool {
+func (s *InMemoryStore) Exists(key string) bool {
 	_, ok := s.keyValues[key]
 	return ok
 }
@@ -30,7 +31,7 @@ func (s *InMemoryStore) CompareAndSwap(key string, oldValue, newValue Entry) (sw
 }
 
 func (s *InMemoryStore) LoadOrStore(key string, defaultValue Entry) (Entry, bool) {
-	loaded := s.exists(key)
+	loaded := s.Exists(key)
 	if !loaded {
 		s.keyValues[key] = defaultValue
 	}
@@ -38,7 +39,7 @@ func (s *InMemoryStore) LoadOrStore(key string, defaultValue Entry) (Entry, bool
 }
 
 func (s *InMemoryStore) Delete(key string) bool {
-	existed := s.exists(key)
+	existed := s.Exists(key)
 	delete(s.keyValues, key)
 	return existed
 }
