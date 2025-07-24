@@ -4,7 +4,6 @@ import "strconv"
 
 type Store interface {
 	Get(key string) (Entry, bool)
-	CompareAndSwap(key string, oldValue, newValue Entry) (swapped bool)
 	LoadOrStore(key string, defaultValue Entry) (Entry, bool)
 	Delete(key string) bool
 
@@ -21,14 +20,6 @@ type InMemoryStore struct {
 func (s *InMemoryStore) Exists(key string) bool {
 	_, ok := s.keyValues[key]
 	return ok
-}
-
-func (s *InMemoryStore) CompareAndSwap(key string, oldValue, newValue Entry) (swapped bool) {
-	swapped = s.keyValues[key] == oldValue
-	if swapped {
-		s.keyValues[key] = newValue
-	}
-	return
 }
 
 func (s *InMemoryStore) LoadOrStore(key string, defaultValue Entry) (Entry, bool) {
