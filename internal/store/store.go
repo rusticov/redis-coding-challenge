@@ -8,9 +8,10 @@ type Store interface {
 	LoadOrStore(key string, defaultValue Entry) (Entry, bool)
 	Delete(key string) bool
 
-	Exists(key string) bool
 	Write(key string, value any)
 	ReadString(key string) (string, error)
+	Exists(key string) bool
+	Increment(key string, incrementBy int64) (int64, error)
 }
 
 type InMemoryStore struct {
