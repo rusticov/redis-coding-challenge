@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestStore(t *testing.T) {
+func TestStoreStrings(t *testing.T) {
 
 	t.Run("read value added to store for a key", func(t *testing.T) {
 		s := store.New()
