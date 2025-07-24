@@ -1,6 +1,7 @@
 package command
 
 import (
+	"errors"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
 )
@@ -22,9 +23,14 @@ type GetCommand struct {
 }
 
 func (cmd GetCommand) Execute(s store.Store) (protocol.Data, error) {
-	value, exists := s.Get(cmd.key)
-	if !exists {
+	value, err := s.ReadString(cmd.key)
+
+	if errors.Is(err, store.ErrorKeyNotFound) {
 		return nil, nil
 	}
-	return protocol.NewBulkString(value.Data().(string)), nil // TODO need to have lists
+	if err != nil {
+		return nil, err
+	}
+
+	return protocol.NewBulkString(value), err
 }

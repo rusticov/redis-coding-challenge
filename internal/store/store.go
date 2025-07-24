@@ -7,6 +7,9 @@ type Store interface {
 	CompareAndSwap(key string, oldValue, newValue Entry) (swapped bool)
 	LoadOrStore(key string, defaultValue Entry) (Entry, bool)
 	Delete(key string) bool
+
+	Write(key string, value any)
+	ReadString(key string) (string, error)
 }
 
 type InMemoryStore struct {
