@@ -3,7 +3,7 @@ package list_test
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"redis-challenge/internal/command/list"
+	"redis-challenge/internal/store/list"
 	"testing"
 )
 
@@ -58,11 +58,18 @@ func TestReadRangeFromStoreList(t *testing.T) {
 		assert.Equal(t, []string{"a", "b", "c", "d"}, values)
 	})
 
+	t.Run("range with end -1 includes the end of the list", func(t *testing.T) {
+		values, err := list.ReadRangeFromStoreList([]string{"a", "b", "c", "d", "e"}, 1, -1)
+
+		require.Nil(t, err, "should not return an error")
+		assert.Equal(t, []string{"b", "c", "d", "e"}, values)
+	})
+
 	t.Run("range with start positive and end negative such that start is before end", func(t *testing.T) {
 		values, err := list.ReadRangeFromStoreList([]string{"a", "b", "c", "d", "e"}, 1, -2)
 
 		require.Nil(t, err, "should not return an error")
-		assert.Equal(t, []string{"b", "c"}, values)
+		assert.Equal(t, []string{"b", "c", "d"}, values)
 	})
 
 	t.Run("range with start positive and end negative such that end is before start", func(t *testing.T) {

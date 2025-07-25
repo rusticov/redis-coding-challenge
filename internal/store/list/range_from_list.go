@@ -16,7 +16,7 @@ func ReadRangeFromStoreList(storeValue any, start, end int) ([]string, error) {
 
 	to := end + 1
 	if end < 0 {
-		to = len(allValues) + end
+		to = len(allValues) + end + 1
 	}
 
 	if allValues == nil {
