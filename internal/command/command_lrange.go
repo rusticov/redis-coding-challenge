@@ -3,7 +3,6 @@ package command
 import (
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
-	"redis-challenge/internal/store/list"
 	"strconv"
 )
 
@@ -60,17 +59,15 @@ type LRangeCommand struct {
 }
 
 func (cmd LRangeCommand) Execute(s store.Store) (protocol.Data, error) {
-	dataInStore, _ := s.Get(cmd.key)
-
-	values, err := list.ReadRangeFromStoreList(dataInStore, cmd.left, cmd.right)
+	listRange, err := s.ReadListRange(cmd.key, cmd.left, cmd.right)
 	if err != nil {
 		return nil, err
 	}
 
-	data := make([]protocol.Data, len(values))
-	for i, value := range values {
-		data[i] = protocol.NewBulkString(value)
+	values := make([]protocol.Data, len(listRange))
+	for i, value := range listRange {
+		values[i] = protocol.NewBulkString(value)
 	}
 
-	return protocol.NewArray(data), nil
+	return protocol.NewArray(values), nil
 }

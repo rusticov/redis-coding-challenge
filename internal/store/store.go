@@ -10,9 +10,11 @@ type Store interface {
 	LoadOrStore(key string, defaultValue Entry) (Entry, bool)
 	Delete(key string) bool
 
-	Write(key string, value any)
 	ReadString(key string) (string, error)
+	ReadListRange(key string, fromIndex int, toIndex int) ([]string, error)
 	Exists(key string) bool
+
+	Write(key string, value any)
 	Increment(key string, incrementBy int64) (int64, error)
 	LeftPush(key string, values []string) (int64, error)
 }

@@ -2,6 +2,7 @@ package call
 
 import (
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
@@ -46,4 +47,8 @@ func (p protocolStringCall) ConfirmResponse(t testing.TB, response string) {
 	} else {
 		assert.Equal(t, p.expectedResponse, response)
 	}
+}
+
+func (p protocolStringCall) IsPossiblePartialResponse(response string) bool {
+	return response != p.expectedResponse && strings.HasPrefix(p.expectedResponse, response)
 }

@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net"
 	"redis-challenge/internal/server"
@@ -44,11 +43,16 @@ func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ..
 			continue
 		}
 
-		buffer := make([]byte, LargeStringByteCount+20)
-		n, err := connection.Read(buffer)
-		assert.NoError(t, err, "failed to read reply to the request: %s", request)
+		response := ""
 
-		response := string(buffer[:n])
+		buffer := make([]byte, LargeStringByteCount+20)
+
+		for nextCall.IsPossiblePartialResponse(response) {
+			n, err := connection.Read(buffer)
+			require.NoError(t, err, "failed to read reply to the request: %s", request)
+
+			response += string(buffer[:n])
+		}
 
 		nextCall.ConfirmResponse(t, response)
 	}

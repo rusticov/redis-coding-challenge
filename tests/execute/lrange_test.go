@@ -66,10 +66,38 @@ func TestLeftRange(t *testing.T) {
 				),
 			},
 		},
+		"lrange with negative end counts -1 as the end and so -2 as one in from the end": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("LPUSH"),
+						protocol.NewBulkString("key-for-negative-end" + uniqueSuffix),
+						protocol.NewBulkString("a"),
+						protocol.NewBulkString("b"),
+						protocol.NewBulkString("c"),
+						protocol.NewBulkString("d"),
+						protocol.NewBulkString("e"),
+					},
+					protocol.NewSimpleInteger(5),
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("LRANGE"),
+						protocol.NewBulkString("key-for-negative-end" + uniqueSuffix),
+						protocol.NewBulkString("1"),
+						protocol.NewBulkString("-2"),
+					},
+					protocol.NewArray([]protocol.Data{
+						protocol.NewBulkString("d"),
+						protocol.NewBulkString("c"),
+						protocol.NewBulkString("b"),
+					}),
+				),
+			},
+		},
 	}
 
 	for name, testCase := range testCases {
-		t.Skip("awaiting a new implementation of LRANGE command")
 		t.Run(name, func(t *testing.T) {
 			tests.DriveProtocolAgainstServer(t, testCase.calls, testCase.driverChoice)
 		})

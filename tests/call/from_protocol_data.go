@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/stretchr/testify/assert"
 	"redis-challenge/internal/protocol"
+	"strings"
 	"testing"
 )
 
@@ -80,4 +81,19 @@ func (c DataCall) ConfirmValidation(t testing.TB, validationError protocol.Data)
 	}
 
 	assert.Equal(t, expectedError, validationError, "response should be an error")
+}
+
+func (c DataCall) IsPossiblePartialResponse(response string) bool {
+	expectedResponse := c.expectedResponseAsText()
+	return response != expectedResponse && strings.HasPrefix(expectedResponse, response)
+}
+
+func (c DataCall) expectedResponseAsText() string {
+	var buffer bytes.Buffer
+	err := protocol.WriteData(&buffer, c.expectedResponse)
+
+	if err != nil {
+		return err.Error()
+	}
+	return buffer.String()
 }

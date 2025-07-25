@@ -10,4 +10,5 @@ type Call interface {
 	Request() string
 	IsResponseExpected() bool
 	ConfirmResponse(t testing.TB, response string)
+	IsPossiblePartialResponse(response string) bool
 }
