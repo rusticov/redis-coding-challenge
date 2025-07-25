@@ -53,6 +53,65 @@ func TestMixSettingValuesOfIncompatibleTypes(t *testing.T) {
 				),
 			},
 		},
+		"set to key with a list value is ok": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("LPUSH"),
+						protocol.NewBulkString("key-lpush-set" + uniqueSuffix),
+						protocol.NewBulkString("value 1"),
+						protocol.NewBulkString("value 2"),
+					},
+					protocol.NewSimpleInteger(2),
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-lpush-set" + uniqueSuffix),
+						protocol.NewBulkString("value 1"),
+					},
+					protocol.SimpleString("OK"),
+				),
+			},
+		},
+		"incr value to key with a list value should return error": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("LPUSH"),
+						protocol.NewBulkString("key-lpush-incr" + uniqueSuffix),
+						protocol.NewBulkString("value 1"),
+					},
+					protocol.NewSimpleInteger(1),
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("INCR"),
+						protocol.NewBulkString("key-lpush-incr" + uniqueSuffix),
+					},
+					protocol.NewSimpleError("WRONGTYPE Operation against a key holding the wrong kind of value"),
+				),
+			},
+		},
+		"decr value to key with a list value should return error": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("LPUSH"),
+						protocol.NewBulkString("key-lpush-decr" + uniqueSuffix),
+						protocol.NewBulkString("value 1"),
+					},
+					protocol.NewSimpleInteger(1),
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("DECR"),
+						protocol.NewBulkString("key-lpush-decr" + uniqueSuffix),
+					},
+					protocol.NewSimpleError("WRONGTYPE Operation against a key holding the wrong kind of value"),
+				),
+			},
+		},
 	}
 
 	for name, testCase := range testCases {

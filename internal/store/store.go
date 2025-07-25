@@ -58,11 +58,14 @@ func (s *InMemoryStore) Increment(key string, incrementBy int64) (int64, error) 
 
 func (s *InMemoryStore) readInteger(key string) (int64, error) {
 	if entry, ok := s.keyValues[key]; ok {
-		value, err := strconv.ParseInt(entry.data.(string), 10, 64)
-		if err != nil {
-			return 0, ErrorNotAnInteger
+		if text, ok := entry.data.(string); ok {
+			value, err := strconv.ParseInt(text, 10, 64)
+			if err != nil {
+				return 0, ErrorNotAnInteger
+			}
+			return value, nil
 		}
-		return value, nil
+		return 0, ErrorWrongOperationType
 	}
 	return 0, nil
 }

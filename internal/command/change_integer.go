@@ -12,6 +12,9 @@ type ChangeIntegerCommand struct {
 
 func (cmd ChangeIntegerCommand) Execute(s store.Store) (protocol.Data, error) {
 	value, err := s.Increment(cmd.key, cmd.change)
+	if err == store.ErrorWrongOperationType {
+		return NewWrongOperationTypeError(), nil
+	}
 	if err != nil {
 		return protocol.NewSimpleError("ERR value is not an integer or out of range"), nil
 	}

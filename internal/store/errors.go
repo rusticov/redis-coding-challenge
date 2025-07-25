@@ -7,6 +7,7 @@ func (e Error) Error() string {
 }
 
 const (
-	ErrorKeyNotFound  Error = "key not found"
-	ErrorNotAnInteger Error = "not an integer"
+	ErrorKeyNotFound        Error = "key not found"
+	ErrorNotAnInteger       Error = "not an integer"
+	ErrorWrongOperationType Error = "wrong operation type"
 )
