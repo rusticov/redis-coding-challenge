@@ -15,8 +15,10 @@ type execution struct {
 	response chan<- protocol.Data
 }
 
+const callsToStoreQueueSize = 1000
+
 func NewStoreExecutor(s store.Store) Executor {
-	executionChannel := make(chan execution, 1000)
+	executionChannel := make(chan execution, callsToStoreQueueSize)
 
 	go func() { // TODO handle clean closing of this goroutine on server close
 		for {
