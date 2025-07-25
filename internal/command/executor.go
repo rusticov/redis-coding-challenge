@@ -9,22 +9,36 @@ type Executor interface {
 	Execute(cmd Command, responses chan<- protocol.Data, errors chan<- error)
 }
 
-func NewStoreExecutor(store store.Store) Executor {
-	return StoreExecutor{store: store}
+type execution struct {
+	cmd      Command
+	errors   chan<- error
+	response chan<- protocol.Data
 }
 
-type StoreExecutor struct {
-	store store.Store
-}
+func NewStoreExecutor(s store.Store) Executor {
+	executionChannel := make(chan execution, 1000)
 
-func (executor StoreExecutor) Execute(cmd Command, responses chan<- protocol.Data, errors chan<- error) {
 	go func() {
-		data, err := cmd.Execute(executor.store)
-		if err != nil {
-			errors <- err
-			return
-		}
+		for {
+			e := <-executionChannel
 
-		responses <- data
+			data, err := e.cmd.Execute(s)
+
+			if err != nil {
+				e.errors <- err
+				continue
+			}
+			e.response <- data
+		}
 	}()
+
+	return storeExecutor{executionChannel: executionChannel}
+}
+
+type storeExecutor struct {
+	executionChannel chan<- execution
+}
+
+func (executor storeExecutor) Execute(cmd Command, responses chan<- protocol.Data, errors chan<- error) {
+	executor.executionChannel <- execution{cmd: cmd, errors: errors, response: responses}
 }
