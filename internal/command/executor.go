@@ -18,7 +18,7 @@ type execution struct {
 func NewStoreExecutor(s store.Store) Executor {
 	executionChannel := make(chan execution, 1000)
 
-	go func() {
+	go func() { // TODO handle clean closing of this goroutine on server close
 		for {
 			e := <-executionChannel
 
