@@ -45,6 +45,8 @@ func (c *ChallengeServer) AddMonitor(monitor MonitorChannel) {
 }
 
 func NewChallengeServer(port int, s store.Store) (*ChallengeServer, error) {
+	executor := command.NewStoreExecutor(s)
+
 	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return nil, err
@@ -65,7 +67,7 @@ func NewChallengeServer(port int, s store.Store) (*ChallengeServer, error) {
 				}
 
 				go func() {
-					connectionHandler(connection, s)
+					connectionHandler(connection, executor)
 				}()
 			}
 		}
@@ -77,7 +79,7 @@ func NewChallengeServer(port int, s store.Store) (*ChallengeServer, error) {
 	}, nil
 }
 
-func connectionHandler(connection net.Conn, s store.Store) {
+func connectionHandler(connection net.Conn, executor command.Executor) {
 	defer func() {
 		err := connection.Close()
 		if err != nil {
@@ -100,7 +102,7 @@ func connectionHandler(connection net.Conn, s store.Store) {
 		if requestByteCount == 0 {
 			continue
 		}
-		response := executeCommand(protocolData, buffer, s)
+		response := executeCommand(protocolData, buffer, executor)
 
 		err = protocol.WriteData(connection, response)
 		if err != nil {
@@ -112,10 +114,8 @@ func connectionHandler(connection net.Conn, s store.Store) {
 	}
 }
 
-func executeCommand(protocolData protocol.Data, buffer bytes.Buffer, s store.Store) protocol.Data {
+func executeCommand(protocolData protocol.Data, buffer bytes.Buffer, executor command.Executor) protocol.Data {
 	parsedCommand, commandError := command.Validate(protocolData)
-
-	var response protocol.Data
 
 	switch {
 	case commandError != nil:
@@ -125,12 +125,18 @@ func executeCommand(protocolData protocol.Data, buffer bytes.Buffer, s store.Sto
 		slog.Error("expect a command if there is no error data on parsing", "error", commandError, "request", buffer.String())
 		return protocol.NewSimpleError("ERR protocol error")
 	default:
-		var err error
-		response, err = parsedCommand.Execute(s)
-		if err != nil {
-			slog.Error("failed to execute request", "error", err, "request", buffer.String())
-		}
+		responseReceiver := make(chan protocol.Data)
+		errorReceiver := make(chan error)
 
-		return response
+		executor.Execute(parsedCommand, responseReceiver, errorReceiver)
+
+		select {
+		case err := <-errorReceiver:
+			slog.Error("failed to execute request", "error", err, "request", buffer.String())
+			return protocol.NewSimpleError("ERR protocol error")
+
+		case response := <-responseReceiver:
+			return response
+		}
 	}
 }
