@@ -1,6 +1,9 @@
 package store
 
-import "strconv"
+import (
+	"redis-challenge/internal/store/list"
+	"strconv"
+)
 
 type Store interface {
 	Get(key string) (Entry, bool)
@@ -11,6 +14,7 @@ type Store interface {
 	ReadString(key string) (string, error)
 	Exists(key string) bool
 	Increment(key string, incrementBy int64) (int64, error)
+	LeftPush(key string, values []string) (int64, error)
 }
 
 type InMemoryStore struct {
@@ -73,6 +77,34 @@ func (s *InMemoryStore) readInteger(key string) (int64, error) {
 		return value, nil
 	}
 	return 0, nil
+}
+
+func (s *InMemoryStore) LeftPush(key string, values []string) (int64, error) {
+	oldList, _ := s.keyValues[key]
+	updatedList, err := list.LeftPushToOldList(values, oldList.data)
+	if err != nil {
+		return 0, err
+	}
+
+	s.keyValues[key] = NewEntry(updatedList)
+
+	return int64(len(updatedList)), nil
+}
+
+func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
+	oldList, _ := s.keyValues[key]
+	updatedList, err := list.RightPushToOldList(values, oldList.data)
+	if err != nil {
+		return 0, err
+	}
+
+	s.keyValues[key] = NewEntry(updatedList)
+
+	return int64(len(updatedList)), nil
+}
+
+func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([]string, error) {
+	return list.ReadRangeFromStoreList(s.keyValues[key].data, fromIndex, toIndex)
 }
 
 func New() *InMemoryStore {

@@ -1,9 +1,9 @@
 package command
 
 import (
-	"redis-challenge/internal/command/list"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
+	"redis-challenge/internal/store/list"
 	"strconv"
 )
 
