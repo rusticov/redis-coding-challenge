@@ -32,7 +32,10 @@ type RPushCommand struct {
 }
 
 func (cmd RPushCommand) Execute(s store.Store) (protocol.Data, error) {
-	count := len(cmd.values)
+	count, err := s.RightPush(cmd.key, cmd.values)
+	if err != nil {
+		return nil, err
+	}
 
-	return protocol.NewSimpleInteger(int64(count)), nil
+	return protocol.NewSimpleInteger(count), nil
 }

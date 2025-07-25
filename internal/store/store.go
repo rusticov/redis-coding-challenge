@@ -17,6 +17,7 @@ type Store interface {
 	Write(key string, value any)
 	Increment(key string, incrementBy int64) (int64, error)
 	LeftPush(key string, values []string) (int64, error)
+	RightPush(key string, values []string) (int64, error)
 }
 
 type InMemoryStore struct {
