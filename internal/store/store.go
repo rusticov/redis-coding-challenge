@@ -6,15 +6,13 @@ import (
 )
 
 type Store interface {
-	Get(key string) (Entry, bool)
-	LoadOrStore(key string, defaultValue Entry) (Entry, bool)
-	Delete(key string) bool
-
 	ReadString(key string) (string, error)
 	ReadListRange(key string, fromIndex int, toIndex int) ([]string, error)
 	Exists(key string) bool
 
 	Write(key string, value any)
+	Delete(key string) bool
+
 	Increment(key string, incrementBy int64) (int64, error)
 	LeftPush(key string, values []string) (int64, error)
 	RightPush(key string, values []string) (int64, error)
@@ -29,23 +27,10 @@ func (s *InMemoryStore) Exists(key string) bool {
 	return ok
 }
 
-func (s *InMemoryStore) LoadOrStore(key string, defaultValue Entry) (Entry, bool) {
-	loaded := s.Exists(key)
-	if !loaded {
-		s.keyValues[key] = defaultValue
-	}
-	return s.keyValues[key], loaded
-}
-
 func (s *InMemoryStore) Delete(key string) bool {
 	existed := s.Exists(key)
 	delete(s.keyValues, key)
 	return existed
-}
-
-func (s *InMemoryStore) Get(key string) (Entry, bool) {
-	value, ok := s.keyValues[key]
-	return value, ok
 }
 
 func (s *InMemoryStore) Write(key string, value any) {
