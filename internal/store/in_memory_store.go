@@ -38,6 +38,8 @@ func (s *InMemoryStore) readEntry(key string) (entry, bool) {
 
 		if expirationTime > s.clock() {
 			return keyEntry, true
+		} else {
+			delete(s.keyEntries, key)
 		}
 	}
 	return entry{}, false
@@ -140,6 +142,10 @@ func (s *InMemoryStore) expiryTimeInMilliseconds(key string, expiryOption Expiry
 	}
 
 	return maximumTimeInFuture
+}
+
+func (s *InMemoryStore) Size() int {
+	return len(s.keyEntries)
 }
 
 func New() *InMemoryStore {
