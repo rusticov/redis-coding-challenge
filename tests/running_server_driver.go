@@ -22,8 +22,21 @@ const (
 	UseChallengeServer ServerVariant = ""
 )
 
-func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ...ServerVariant) {
-	testServer := createTestServer(t, variant...)
+func (s ServerVariant) Sleep(clock *store.FixedClock, c call.Call) {
+	delay := c.Delay()
+
+	switch s {
+	case UseChallengeServer:
+		clock.AddMilliseconds(delay.Milliseconds())
+	default:
+		time.Sleep(delay)
+	}
+}
+
+func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ServerVariant) {
+	clock := &store.FixedClock{TimeInMilliseconds: time.Now().UnixMilli()}
+
+	testServer := createTestServer(t, clock.Now, variant)
 	defer func() {
 		require.NoError(t, testServer.Close(), "failed to close test server")
 	}()
@@ -35,7 +48,7 @@ func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ..
 	}()
 
 	for _, nextCall := range calls {
-		time.Sleep(nextCall.Delay())
+		variant.Sleep(clock, nextCall)
 
 		request := nextCall.Request()
 		_, err = connection.Write([]byte(request))
@@ -60,7 +73,7 @@ func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ..
 	}
 }
 
-func createTestServer(t testing.TB, variant ...ServerVariant) server.Server {
+func createTestServer(t testing.TB, clock store.Clock, variant ...ServerVariant) server.Server {
 	activeVariant := UseChallengeServer
 	if len(variant) > 0 {
 		activeVariant = variant[0]
@@ -70,7 +83,7 @@ func createTestServer(t testing.TB, variant ...ServerVariant) server.Server {
 	case UseRealRedisServer:
 		return NewRealRedisServer()
 	default:
-		challengeServer, err := server.NewChallengeServer(0, store.New())
+		challengeServer, err := server.NewChallengeServer(0, store.NewWithClock(clock))
 		require.NoError(t, err)
 		return challengeServer
 	}
