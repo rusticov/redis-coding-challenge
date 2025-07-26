@@ -5,6 +5,8 @@ import (
 	"strconv"
 )
 
+const maximumTimeInFuture = int64(9223372036854775807)
+
 type entry struct {
 	data                     any
 	expiryTimeInMilliseconds int64
@@ -114,8 +116,6 @@ func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([
 	return list.ReadRangeFromStoreList(s.keyEntries[key].data, fromIndex, toIndex)
 }
 
-const maximumTimeInFuture = int64(9223372036854775807)
-
 func (s *InMemoryStore) WriteWithExpiry(key string, value string, expiryOption ExpiryOption, expiry int64) {
 	switch expiryOption {
 	case ExpiryOptionNone:
@@ -159,10 +159,10 @@ func (s *InMemoryStore) WriteWithExpiry(key string, value string, expiryOption E
 }
 
 func New() *InMemoryStore {
-	return NewWithCLock(CurrentSystemTime)
+	return NewWithClock(CurrentSystemTime)
 }
 
-func NewWithCLock(clock Clock) *InMemoryStore {
+func NewWithClock(clock Clock) *InMemoryStore {
 	return &InMemoryStore{
 		keyEntries: make(map[string]entry),
 		clock:      clock,
