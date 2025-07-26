@@ -24,8 +24,27 @@ type InMemoryStore struct {
 }
 
 func (s *InMemoryStore) Exists(key string) bool {
-	e := s.keyEntries[key]
-	return e.expiryTimeInMilliseconds > s.clock()
+	return s.readEntry(key) != nil
+}
+
+func (s *InMemoryStore) ReadString(key string) (string, error) {
+	value := s.readEntry(key)
+
+	if value != nil {
+		return (*value).(string), nil
+	}
+	return "", ErrorKeyNotFound
+}
+
+func (s *InMemoryStore) readEntry(key string) *any {
+	if keyEntry, ok := s.keyEntries[key]; ok {
+		expirationTime := keyEntry.expiryTimeInMilliseconds
+
+		if expirationTime > s.clock() {
+			return &keyEntry.data
+		}
+	}
+	return nil
 }
 
 func (s *InMemoryStore) Delete(key string) bool {
@@ -36,17 +55,6 @@ func (s *InMemoryStore) Delete(key string) bool {
 
 func (s *InMemoryStore) Write(key string, value string) {
 	s.keyEntries[key] = newEntry(value)
-}
-
-func (s *InMemoryStore) ReadString(key string) (string, error) {
-	if keyEntry, ok := s.keyEntries[key]; ok {
-		expirationTime := keyEntry.expiryTimeInMilliseconds
-
-		if expirationTime > s.clock() {
-			return keyEntry.data.(string), nil
-		}
-	}
-	return "", ErrorKeyNotFound
 }
 
 func (s *InMemoryStore) Increment(key string, incrementBy int64) (int64, error) {
