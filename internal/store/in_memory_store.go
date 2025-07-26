@@ -10,10 +10,6 @@ type entry struct {
 	expiryTimeInMilliseconds int64
 }
 
-func newEntry(data any) entry {
-	return entry{data: data}
-}
-
 func (e entry) Data() any {
 	return e.data
 }
@@ -53,7 +49,7 @@ func (s *InMemoryStore) Delete(key string) bool {
 }
 
 func (s *InMemoryStore) Write(key string, value string) {
-	s.keyEntries[key] = newEntry(value)
+	s.WriteWithExpiry(key, value, ExpiryOptionNone, 0)
 }
 
 func (s *InMemoryStore) Increment(key string, incrementBy int64) (int64, error) {
@@ -85,25 +81,31 @@ func (s *InMemoryStore) readInteger(key string) (int64, error) {
 }
 
 func (s *InMemoryStore) LeftPush(key string, values []string) (int64, error) {
-	oldList, _ := s.keyEntries[key]
+	oldList, _ := s.readEntry(key)
 	updatedList, err := list.LeftPushToOldList(values, oldList.data)
 	if err != nil {
 		return 0, err
 	}
 
-	s.keyEntries[key] = newEntry(updatedList)
+	s.keyEntries[key] = entry{
+		data:                     updatedList,
+		expiryTimeInMilliseconds: maximumTimeInFuture,
+	}
 
 	return int64(len(updatedList)), nil
 }
 
 func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
-	oldList, _ := s.keyEntries[key]
+	oldList, _ := s.readEntry(key)
 	updatedList, err := list.RightPushToOldList(values, oldList.data)
 	if err != nil {
 		return 0, err
 	}
 
-	s.keyEntries[key] = newEntry(updatedList)
+	s.keyEntries[key] = entry{
+		data:                     updatedList,
+		expiryTimeInMilliseconds: maximumTimeInFuture,
+	}
 
 	return int64(len(updatedList)), nil
 }

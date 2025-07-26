@@ -148,13 +148,17 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("incrementing an expired value should set a new value with no expiry", func(t *testing.T) {
+		// Given store with an expired string value
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithCLock(clock.Now)
 
 		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
 		clock.AddSeconds(1).AddMilliseconds(1)
 
+		// When incrementing against the expired key
 		newValue, err := s.Increment("key", 2)
+
+		// Then the increment succeeds and the new value can be read
 		require.NoError(t, err)
 		assert.Equal(t, int64(2), newValue)
 
