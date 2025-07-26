@@ -12,10 +12,6 @@ type entry struct {
 	expiryTimeInMilliseconds int64
 }
 
-func (e entry) Data() any {
-	return e.data
-}
-
 type InMemoryStore struct {
 	keyEntries map[string]entry
 	clock      Clock
