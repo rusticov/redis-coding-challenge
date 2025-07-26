@@ -28,7 +28,10 @@ func (s *InMemoryStore) Exists(key string) bool {
 
 func (s *InMemoryStore) ReadString(key string) (string, error) {
 	if e, ok := s.readEntry(key); ok {
-		return e.data.(string), nil
+		if text, ok := e.data.(string); ok {
+			return text, nil
+		}
+		return "", ErrorWrongOperationType
 	}
 	return "", ErrorKeyNotFound
 }

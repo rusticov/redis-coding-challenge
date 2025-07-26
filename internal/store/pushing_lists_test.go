@@ -143,4 +143,30 @@ func TestPushingListsIntoStore(t *testing.T) {
 		require.NoError(t, err, "list range can be read")
 		assert.Equal(t, []string{"a", "b"}, listRange, "list range should be read")
 	})
+
+	t.Run("reading a string value against a list should error", func(t *testing.T) {
+		// Given empty store
+		s := store.New()
+		_, err := s.LeftPush("key", []string{"a", "b"})
+		require.NoError(t, err)
+
+		// When reading the value as a string
+		_, err = s.ReadString("key")
+
+		// Then an error is returned
+		assert.Equal(t, store.ErrorWrongOperationType, err)
+	})
+
+	t.Run("incrementing against a list should error", func(t *testing.T) {
+		// Given empty store
+		s := store.New()
+		_, err := s.LeftPush("key", []string{"a", "b"})
+		require.NoError(t, err)
+
+		// When reading the value as a string
+		_, err = s.Increment("key", 1)
+
+		// Then an error is returned
+		assert.Equal(t, store.ErrorWrongOperationType, err)
+	})
 }
