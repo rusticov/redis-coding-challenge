@@ -19,27 +19,27 @@ func (e entry) Data() any {
 }
 
 type InMemoryStore struct {
-	keyValues map[string]entry
-	clock     Clock
+	keyEntries map[string]entry
+	clock      Clock
 }
 
 func (s *InMemoryStore) Exists(key string) bool {
-	_, ok := s.keyValues[key]
+	_, ok := s.keyEntries[key]
 	return ok
 }
 
 func (s *InMemoryStore) Delete(key string) bool {
 	existed := s.Exists(key)
-	delete(s.keyValues, key)
+	delete(s.keyEntries, key)
 	return existed
 }
 
 func (s *InMemoryStore) Write(key string, value string) {
-	s.keyValues[key] = newEntry(value)
+	s.keyEntries[key] = newEntry(value)
 }
 
 func (s *InMemoryStore) ReadString(key string) (string, error) {
-	if keyEntry, ok := s.keyValues[key]; ok {
+	if keyEntry, ok := s.keyEntries[key]; ok {
 		expirationTime := keyEntry.expiryTimeInMilliseconds
 
 		if expirationTime == 0 || expirationTime > s.clock() {
@@ -57,12 +57,13 @@ func (s *InMemoryStore) Increment(key string, incrementBy int64) (int64, error) 
 	value += incrementBy
 
 	stringValue := strconv.FormatInt(value, 10)
-	s.keyValues[key] = newEntry(stringValue)
+	s.keyEntries[key] = newEntry(stringValue)
+
 	return value, nil
 }
 
 func (s *InMemoryStore) readInteger(key string) (int64, error) {
-	if entry, ok := s.keyValues[key]; ok {
+	if entry, ok := s.keyEntries[key]; ok {
 		if text, ok := entry.data.(string); ok {
 			value, err := strconv.ParseInt(text, 10, 64)
 			if err != nil {
@@ -76,35 +77,35 @@ func (s *InMemoryStore) readInteger(key string) (int64, error) {
 }
 
 func (s *InMemoryStore) LeftPush(key string, values []string) (int64, error) {
-	oldList, _ := s.keyValues[key]
+	oldList, _ := s.keyEntries[key]
 	updatedList, err := list.LeftPushToOldList(values, oldList.data)
 	if err != nil {
 		return 0, err
 	}
 
-	s.keyValues[key] = newEntry(updatedList)
+	s.keyEntries[key] = newEntry(updatedList)
 
 	return int64(len(updatedList)), nil
 }
 
 func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
-	oldList, _ := s.keyValues[key]
+	oldList, _ := s.keyEntries[key]
 	updatedList, err := list.RightPushToOldList(values, oldList.data)
 	if err != nil {
 		return 0, err
 	}
 
-	s.keyValues[key] = newEntry(updatedList)
+	s.keyEntries[key] = newEntry(updatedList)
 
 	return int64(len(updatedList)), nil
 }
 
 func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([]string, error) {
-	return list.ReadRangeFromStoreList(s.keyValues[key].data, fromIndex, toIndex)
+	return list.ReadRangeFromStoreList(s.keyEntries[key].data, fromIndex, toIndex)
 }
 
 func (s *InMemoryStore) WriteWithExpiry(key string, value string, expiryOption ExpiryOption, expiry int64) {
-	s.keyValues[key] = entry{
+	s.keyEntries[key] = entry{
 		data:                     value,
 		expiryTimeInMilliseconds: expiry,
 	}
@@ -116,7 +117,7 @@ func New() *InMemoryStore {
 
 func NewWithCLock(clock Clock) *InMemoryStore {
 	return &InMemoryStore{
-		keyValues: make(map[string]entry),
-		clock:     clock,
+		keyEntries: make(map[string]entry),
+		clock:      clock,
 	}
 }
