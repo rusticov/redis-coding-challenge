@@ -141,6 +141,18 @@ func (s *InMemoryStore) WriteWithExpiry(key string, value string, expiryOption E
 			data:                     value,
 			expiryTimeInMilliseconds: expiry * 1000,
 		}
+	case ExpiryOptionExpiryKeepTTL:
+		if keyEntry, ok := s.keyEntries[key]; ok {
+			s.keyEntries[key] = entry{
+				data:                     value,
+				expiryTimeInMilliseconds: keyEntry.expiryTimeInMilliseconds,
+			}
+		} else {
+			s.keyEntries[key] = entry{
+				data:                     value,
+				expiryTimeInMilliseconds: maximumTimeInFuture,
+			}
+		}
 	}
 }
 

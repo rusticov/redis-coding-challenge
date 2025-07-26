@@ -113,6 +113,39 @@ func TestWritingExpiry(t *testing.T) {
 
 		confirmKeyHasValue(t, s, "key", "value")
 	})
+
+	t.Run("overwrite unexpired value with expiry with KEEPTTL should not exist when expiration time of previous value has passed", func(t *testing.T) {
+		clock := store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithCLock(clock.Now)
+
+		s.WriteWithExpiry("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
+		s.WriteWithExpiry("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
+
+		clock.AddSeconds(1).AddMilliseconds(1)
+
+		confirmKeyIsDeleted(t, s, "key")
+	})
+
+	t.Run("overwrite unexpired value with expiry with KEEPTTL should exist when expiration time of previous value has not yet passed", func(t *testing.T) {
+		clock := store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithCLock(clock.Now)
+
+		s.WriteWithExpiry("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
+		s.WriteWithExpiry("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
+
+		clock.AddSeconds(1).AddMilliseconds(-1)
+
+		confirmKeyHasValue(t, s, "key", "value 2")
+	})
+
+	t.Run("write new value with KEEPTTL of should exist", func(t *testing.T) {
+		clock := store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithCLock(clock.Now)
+
+		s.WriteWithExpiry("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
+
+		confirmKeyHasValue(t, s, "key", "value 2")
+	})
 }
 
 func confirmKeyHasValue(t *testing.T, s store.Store, key string, value string) {
