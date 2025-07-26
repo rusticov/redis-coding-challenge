@@ -121,6 +121,16 @@ func (s *InMemoryStore) WriteWithExpiry(key string, value string, expiryOption E
 			data:                     value,
 			expiryTimeInMilliseconds: maximumTimeInFuture,
 		}
+	case ExpiryOptionExpiryMilliseconds:
+		s.keyEntries[key] = entry{
+			data:                     value,
+			expiryTimeInMilliseconds: expiry + s.clock(),
+		}
+	case ExpiryOptionExpirySeconds:
+		s.keyEntries[key] = entry{
+			data:                     value,
+			expiryTimeInMilliseconds: expiry*1000 + s.clock(),
+		}
 	case ExpiryOptionExpiryUnixTimeInMilliseconds:
 		s.keyEntries[key] = entry{
 			data:                     value,
