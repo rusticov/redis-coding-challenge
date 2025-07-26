@@ -24,8 +24,8 @@ type InMemoryStore struct {
 }
 
 func (s *InMemoryStore) Exists(key string) bool {
-	_, ok := s.keyEntries[key]
-	return ok
+	e := s.keyEntries[key]
+	return e.expiryTimeInMilliseconds > s.clock()
 }
 
 func (s *InMemoryStore) Delete(key string) bool {
@@ -42,7 +42,7 @@ func (s *InMemoryStore) ReadString(key string) (string, error) {
 	if keyEntry, ok := s.keyEntries[key]; ok {
 		expirationTime := keyEntry.expiryTimeInMilliseconds
 
-		if expirationTime == 0 || expirationTime > s.clock() {
+		if expirationTime > s.clock() {
 			return keyEntry.data.(string), nil
 		}
 	}
@@ -104,7 +104,17 @@ func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([
 	return list.ReadRangeFromStoreList(s.keyEntries[key].data, fromIndex, toIndex)
 }
 
+const maximumTimeInFuture = int64(9223372036854775807)
+
 func (s *InMemoryStore) WriteWithExpiry(key string, value string, expiryOption ExpiryOption, expiry int64) {
+	if expiryOption == ExpiryOptionNone {
+		s.keyEntries[key] = entry{
+			data:                     value,
+			expiryTimeInMilliseconds: maximumTimeInFuture,
+		}
+		return
+	}
+
 	s.keyEntries[key] = entry{
 		data:                     value,
 		expiryTimeInMilliseconds: expiry,
