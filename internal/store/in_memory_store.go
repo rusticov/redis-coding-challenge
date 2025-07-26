@@ -116,45 +116,34 @@ func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([
 }
 
 func (s *InMemoryStore) Write(key string, value string, expiryOption ExpiryOption, expiry int64) {
+	s.keyEntries[key] = entry{
+		data:                     value,
+		expiryTimeInMilliseconds: s.expiryTimeInMilliseconds(key, expiryOption, expiry),
+	}
+}
+
+func (s *InMemoryStore) expiryTimeInMilliseconds(key string, expiryOption ExpiryOption, expiry int64) int64 {
 	switch expiryOption {
 	case ExpiryOptionNone:
-		s.keyEntries[key] = entry{
-			data:                     value,
-			expiryTimeInMilliseconds: maximumTimeInFuture,
-		}
+		return maximumTimeInFuture
+
 	case ExpiryOptionExpiryMilliseconds:
-		s.keyEntries[key] = entry{
-			data:                     value,
-			expiryTimeInMilliseconds: expiry + s.clock(),
-		}
+		return s.clock() + expiry
 	case ExpiryOptionExpirySeconds:
-		s.keyEntries[key] = entry{
-			data:                     value,
-			expiryTimeInMilliseconds: expiry*1000 + s.clock(),
-		}
+		return s.clock() + expiry*1000
+
 	case ExpiryOptionExpiryUnixTimeInMilliseconds:
-		s.keyEntries[key] = entry{
-			data:                     value,
-			expiryTimeInMilliseconds: expiry,
-		}
+		return expiry
 	case ExpiryOptionExpiryUnixTimeInSeconds:
-		s.keyEntries[key] = entry{
-			data:                     value,
-			expiryTimeInMilliseconds: expiry * 1000,
-		}
+		return expiry * 1000
+
 	case ExpiryOptionExpiryKeepTTL:
 		if keyEntry, ok := s.keyEntries[key]; ok {
-			s.keyEntries[key] = entry{
-				data:                     value,
-				expiryTimeInMilliseconds: keyEntry.expiryTimeInMilliseconds,
-			}
-		} else {
-			s.keyEntries[key] = entry{
-				data:                     value,
-				expiryTimeInMilliseconds: maximumTimeInFuture,
-			}
+			return keyEntry.expiryTimeInMilliseconds
 		}
 	}
+
+	return maximumTimeInFuture
 }
 
 func New() *InMemoryStore {
