@@ -6,9 +6,8 @@ import (
 )
 
 type entry struct {
-	data   any
-	option ExpiryOption
-	value  int64
+	data                     any
+	expiryTimeInMilliseconds int64
 }
 
 func newEntry(data any) entry {
@@ -21,6 +20,7 @@ func (e entry) Data() any {
 
 type InMemoryStore struct {
 	keyValues map[string]entry
+	clock     Clock
 }
 
 func (s *InMemoryStore) Exists(key string) bool {
@@ -39,8 +39,12 @@ func (s *InMemoryStore) Write(key string, value string) {
 }
 
 func (s *InMemoryStore) ReadString(key string) (string, error) {
-	if value, ok := s.keyValues[key]; ok {
-		return value.data.(string), nil
+	if keyEntry, ok := s.keyValues[key]; ok {
+		expirationTime := keyEntry.expiryTimeInMilliseconds
+
+		if expirationTime == 0 || expirationTime > s.clock() {
+			return keyEntry.data.(string), nil
+		}
 	}
 	return "", ErrorKeyNotFound
 }
@@ -99,8 +103,20 @@ func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([
 	return list.ReadRangeFromStoreList(s.keyValues[key].data, fromIndex, toIndex)
 }
 
+func (s *InMemoryStore) WriteWithExpiry(key string, value string, expiryOption ExpiryOption, expiry int64) {
+	s.keyValues[key] = entry{
+		data:                     value,
+		expiryTimeInMilliseconds: expiry,
+	}
+}
+
 func New() *InMemoryStore {
+	return NewWithCLock(CurrentSystemTime)
+}
+
+func NewWithCLock(clock Clock) *InMemoryStore {
 	return &InMemoryStore{
 		keyValues: make(map[string]entry),
+		clock:     clock,
 	}
 }
