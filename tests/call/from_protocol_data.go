@@ -6,6 +6,7 @@ import (
 	"redis-challenge/internal/protocol"
 	"strings"
 	"testing"
+	"time"
 )
 
 func NewFromData(request []protocol.Data, expectedResponse protocol.Data) DataCall {
@@ -34,6 +35,16 @@ type DataCall struct {
 	expectedResponse     protocol.Data
 	expectedPartialError string
 	callIsNotAnError     bool
+	delay                time.Duration
+}
+
+func (c DataCall) WithDelay(delay time.Duration) DataCall {
+	c.delay = delay
+	return c
+}
+
+func (c DataCall) Delay() time.Duration {
+	return c.delay
 }
 
 func (c DataCall) RequestData() protocol.Data {

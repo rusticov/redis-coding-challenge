@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+	"time"
 )
 
 func NewFromProtocol(request string, expectedResponse string) Call {
@@ -35,6 +36,10 @@ type protocolStringCall struct {
 
 func (p protocolStringCall) Request() string {
 	return p.request
+}
+
+func (p protocolStringCall) Delay() time.Duration {
+	return 0
 }
 
 func (p protocolStringCall) IsResponseExpected() bool {

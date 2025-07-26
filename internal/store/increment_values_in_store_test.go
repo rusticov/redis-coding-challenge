@@ -20,7 +20,7 @@ func TestIncrementValuesInStore(t *testing.T) {
 
 	t.Run("increment a number of key with integer", func(t *testing.T) {
 		s := store.New()
-		s.Write("key", "10")
+		s.Write("key", "10", store.ExpiryOptionNone, 0)
 
 		updatedValue, err := s.Increment("key", int64(3))
 		require.Nil(t, err)
@@ -30,7 +30,7 @@ func TestIncrementValuesInStore(t *testing.T) {
 
 	t.Run("read the incremented number of an unstored key", func(t *testing.T) {
 		s := store.New()
-		s.Write("key", "42")
+		s.Write("key", "42", store.ExpiryOptionNone, 0)
 
 		_, err := s.Increment("key", int64(-2))
 		require.Nil(t, err)
@@ -43,7 +43,7 @@ func TestIncrementValuesInStore(t *testing.T) {
 
 	t.Run("increment a number of key with a non-integer", func(t *testing.T) {
 		s := store.New()
-		s.Write("key", "ten")
+		s.Write("key", "ten", store.ExpiryOptionNone, 0)
 
 		_, err := s.Increment("key", int64(3))
 

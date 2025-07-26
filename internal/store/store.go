@@ -5,7 +5,7 @@ type Store interface {
 	ReadListRange(key string, fromIndex int, toIndex int) ([]string, error)
 	Exists(key string) bool
 
-	Write(key string, value string)
+	Write(key string, value string, expiryOption ExpiryOption, expiry int64)
 	Delete(key string) bool
 
 	Increment(key string, incrementBy int64) (int64, error)

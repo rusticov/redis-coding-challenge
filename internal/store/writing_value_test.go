@@ -12,7 +12,7 @@ func TestWritingExpiry(t *testing.T) {
 	t.Run("write value into store with no expiry", func(t *testing.T) {
 		s := store.New()
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionNone, 0)
+		s.Write("key", "value", store.ExpiryOptionNone, 0)
 
 		confirmKeyHasValue(t, s, "key", "value")
 	})
@@ -21,7 +21,7 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryUnixTimeInMilliseconds, 2_000)
+		s.Write("key", "value", store.ExpiryOptionExpiryUnixTimeInMilliseconds, 2_000)
 
 		clock.AddSeconds(1).AddMilliseconds(1)
 
@@ -32,7 +32,7 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryUnixTimeInMilliseconds, 2_000)
+		s.Write("key", "value", store.ExpiryOptionExpiryUnixTimeInMilliseconds, 2_000)
 
 		confirmKeyHasValue(t, s, "key", "value")
 	})
@@ -41,7 +41,7 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryUnixTimeInMilliseconds, 2_000)
+		s.Write("key", "value", store.ExpiryOptionExpiryUnixTimeInMilliseconds, 2_000)
 
 		clock.AddSeconds(1).AddMilliseconds(-1)
 
@@ -52,7 +52,7 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryUnixTimeInSeconds, 2)
+		s.Write("key", "value", store.ExpiryOptionExpiryUnixTimeInSeconds, 2)
 
 		clock.AddSeconds(1).AddMilliseconds(1)
 
@@ -63,7 +63,7 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryUnixTimeInSeconds, 2)
+		s.Write("key", "value", store.ExpiryOptionExpiryUnixTimeInSeconds, 2)
 
 		clock.AddSeconds(1).AddMilliseconds(-1)
 
@@ -74,7 +74,7 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
+		s.Write("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
 
 		clock.AddSeconds(1).AddMilliseconds(1)
 
@@ -85,7 +85,7 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
+		s.Write("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
 
 		clock.AddSeconds(1).AddMilliseconds(-1)
 
@@ -96,7 +96,7 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpirySeconds, 1)
+		s.Write("key", "value", store.ExpiryOptionExpirySeconds, 1)
 
 		clock.AddSeconds(1).AddMilliseconds(1)
 
@@ -107,7 +107,7 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpirySeconds, 1)
+		s.Write("key", "value", store.ExpiryOptionExpirySeconds, 1)
 
 		clock.AddSeconds(1).AddMilliseconds(-1)
 
@@ -118,8 +118,8 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
-		s.WriteWithExpiry("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
+		s.Write("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
+		s.Write("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
 
 		clock.AddSeconds(1).AddMilliseconds(1)
 
@@ -130,8 +130,8 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
-		s.WriteWithExpiry("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
+		s.Write("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
+		s.Write("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
 
 		clock.AddSeconds(1).AddMilliseconds(-1)
 
@@ -142,7 +142,7 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
+		s.Write("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
 
 		confirmKeyHasValue(t, s, "key", "value 2")
 	})
@@ -152,7 +152,7 @@ func TestWritingExpiry(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
+		s.Write("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
 		clock.AddSeconds(1).AddMilliseconds(1)
 
 		// When incrementing against the expired key

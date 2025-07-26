@@ -48,7 +48,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 		// Given empty store
 		s := store.New()
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionNone, 0)
+		s.Write("key", "value", store.ExpiryOptionNone, 0)
 
 		// When a list is left pushed
 		_, err := s.LeftPush("key", []string{"a", "b"})
@@ -62,7 +62,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
+		s.Write("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
 		clock.AddSeconds(1).AddMilliseconds(1)
 
 		// When a list is left pushed
@@ -115,7 +115,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 		// Given empty store
 		s := store.New()
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionNone, 0)
+		s.Write("key", "value", store.ExpiryOptionNone, 0)
 
 		// When a list is right pushed
 		_, err := s.RightPush("key", []string{"a", "b"})
@@ -129,7 +129,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 		clock := store.FixedClock{TimeInMilliseconds: 1_000}
 		s := store.NewWithClock(clock.Now)
 
-		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
+		s.Write("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
 		clock.AddSeconds(1).AddMilliseconds(1)
 
 		// When a list is right pushed

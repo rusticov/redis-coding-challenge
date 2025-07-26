@@ -132,7 +132,7 @@ func (cmd SetCommand) Execute(s store.Store) (protocol.Data, error) {
 		return nil, nil
 	}
 
-	s.Write(cmd.key, cmd.value)
+	s.Write(cmd.key, cmd.value, cmd.expiryOption, cmd.expiry)
 
 	if cmd.get {
 		return oldValue, nil

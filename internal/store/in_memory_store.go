@@ -53,10 +53,6 @@ func (s *InMemoryStore) Delete(key string) bool {
 	return existed
 }
 
-func (s *InMemoryStore) Write(key string, value string) {
-	s.WriteWithExpiry(key, value, ExpiryOptionNone, 0)
-}
-
 func (s *InMemoryStore) Increment(key string, incrementBy int64) (int64, error) {
 	value, err := s.readInteger(key)
 	if err != nil {
@@ -66,7 +62,7 @@ func (s *InMemoryStore) Increment(key string, incrementBy int64) (int64, error) 
 
 	stringValue := strconv.FormatInt(value, 10)
 
-	s.WriteWithExpiry(key, stringValue, ExpiryOptionNone, 0)
+	s.Write(key, stringValue, ExpiryOptionNone, 0)
 
 	return value, nil
 }
@@ -119,7 +115,7 @@ func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([
 	return list.ReadRangeFromStoreList(s.keyEntries[key].data, fromIndex, toIndex)
 }
 
-func (s *InMemoryStore) WriteWithExpiry(key string, value string, expiryOption ExpiryOption, expiry int64) {
+func (s *InMemoryStore) Write(key string, value string, expiryOption ExpiryOption, expiry int64) {
 	switch expiryOption {
 	case ExpiryOptionNone:
 		s.keyEntries[key] = entry{

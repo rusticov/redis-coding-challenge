@@ -35,6 +35,8 @@ func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ..
 	}()
 
 	for _, nextCall := range calls {
+		time.Sleep(nextCall.Delay())
+
 		request := nextCall.Request()
 		_, err = connection.Write([]byte(request))
 		require.NoError(t, err, "failed to write request: %s", request)

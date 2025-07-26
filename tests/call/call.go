@@ -2,6 +2,7 @@ package call
 
 import (
 	"testing"
+	"time"
 )
 
 // Call represents an interface for defining protocol interactions with requests and responses for a server or system.
@@ -11,4 +12,5 @@ type Call interface {
 	IsResponseExpected() bool
 	ConfirmResponse(t testing.TB, response string)
 	IsPossiblePartialResponse(response string) bool
+	Delay() time.Duration
 }
