@@ -115,17 +115,22 @@ func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([
 const maximumTimeInFuture = int64(9223372036854775807)
 
 func (s *InMemoryStore) WriteWithExpiry(key string, value string, expiryOption ExpiryOption, expiry int64) {
-	if expiryOption == ExpiryOptionNone {
+	switch expiryOption {
+	case ExpiryOptionNone:
 		s.keyEntries[key] = entry{
 			data:                     value,
 			expiryTimeInMilliseconds: maximumTimeInFuture,
 		}
-		return
-	}
-
-	s.keyEntries[key] = entry{
-		data:                     value,
-		expiryTimeInMilliseconds: expiry,
+	case ExpiryOptionExpiryUnixTimeInMilliseconds:
+		s.keyEntries[key] = entry{
+			data:                     value,
+			expiryTimeInMilliseconds: expiry,
+		}
+	case ExpiryOptionExpiryUnixTimeInSeconds:
+		s.keyEntries[key] = entry{
+			data:                     value,
+			expiryTimeInMilliseconds: expiry * 1000,
+		}
 	}
 }
 
