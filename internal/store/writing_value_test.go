@@ -146,6 +146,20 @@ func TestWritingExpiry(t *testing.T) {
 
 		confirmKeyHasValue(t, s, "key", "value 2")
 	})
+
+	t.Run("incrementing an expired value should set a new value with no expiry", func(t *testing.T) {
+		clock := store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithCLock(clock.Now)
+
+		s.WriteWithExpiry("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
+		clock.AddSeconds(1).AddMilliseconds(1)
+
+		newValue, err := s.Increment("key", 2)
+		require.NoError(t, err)
+		assert.Equal(t, int64(2), newValue)
+
+		confirmKeyHasValue(t, s, "key", "2")
+	})
 }
 
 func confirmKeyHasValue(t *testing.T, s store.Store, key string, value string) {

@@ -24,27 +24,26 @@ type InMemoryStore struct {
 }
 
 func (s *InMemoryStore) Exists(key string) bool {
-	return s.readEntry(key) != nil
+	_, ok := s.readEntry(key)
+	return ok
 }
 
 func (s *InMemoryStore) ReadString(key string) (string, error) {
-	value := s.readEntry(key)
-
-	if value != nil {
-		return (*value).(string), nil
+	if e, ok := s.readEntry(key); ok {
+		return e.data.(string), nil
 	}
 	return "", ErrorKeyNotFound
 }
 
-func (s *InMemoryStore) readEntry(key string) *any {
+func (s *InMemoryStore) readEntry(key string) (entry, bool) {
 	if keyEntry, ok := s.keyEntries[key]; ok {
 		expirationTime := keyEntry.expiryTimeInMilliseconds
 
 		if expirationTime > s.clock() {
-			return &keyEntry.data
+			return keyEntry, true
 		}
 	}
-	return nil
+	return entry{}, false
 }
 
 func (s *InMemoryStore) Delete(key string) bool {
@@ -65,14 +64,15 @@ func (s *InMemoryStore) Increment(key string, incrementBy int64) (int64, error) 
 	value += incrementBy
 
 	stringValue := strconv.FormatInt(value, 10)
-	s.keyEntries[key] = newEntry(stringValue)
+
+	s.WriteWithExpiry(key, stringValue, ExpiryOptionNone, 0)
 
 	return value, nil
 }
 
 func (s *InMemoryStore) readInteger(key string) (int64, error) {
-	if entry, ok := s.keyEntries[key]; ok {
-		if text, ok := entry.data.(string); ok {
+	if e, hasEntry := s.readEntry(key); hasEntry {
+		if text, ok := e.data.(string); ok {
 			value, err := strconv.ParseInt(text, 10, 64)
 			if err != nil {
 				return 0, ErrorNotAnInteger
