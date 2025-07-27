@@ -1,6 +1,7 @@
 package command
 
 import (
+	"errors"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
 	"strconv"
@@ -60,6 +61,10 @@ type LRangeCommand struct {
 
 func (cmd LRangeCommand) Execute(s store.Store) (protocol.Data, error) {
 	listRange, err := s.ReadListRange(cmd.key, cmd.left, cmd.right)
+
+	if errors.Is(err, store.ErrorWrongOperationType) {
+		return NewWrongOperationTypeError(), nil
+	}
 	if err != nil {
 		return nil, err
 	}

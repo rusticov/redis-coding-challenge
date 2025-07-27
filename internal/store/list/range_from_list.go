@@ -1,9 +1,9 @@
 package list
 
-func ReadRangeFromStoreList(storeValue any, start, end int) ([]string, error) {
-	allValues, err := parseOldList(storeValue)
-	if err != nil {
-		return nil, err
+func ReadRangeFromStoreList(storeValue any, start, end int) ([]string, bool) {
+	allValues, ok := parseList(storeValue)
+	if !ok {
+		return nil, false
 	}
 
 	from := start
@@ -20,13 +20,13 @@ func ReadRangeFromStoreList(storeValue any, start, end int) ([]string, error) {
 	}
 
 	if allValues == nil {
-		return nil, nil
+		return nil, true
 	}
 	if to <= from {
-		return nil, nil
+		return nil, true
 	}
 	if to > len(allValues) {
 		to = len(allValues)
 	}
-	return allValues[from:to], nil
+	return allValues[from:to], true
 }

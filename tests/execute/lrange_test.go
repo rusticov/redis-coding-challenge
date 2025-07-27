@@ -13,6 +13,27 @@ func TestLeftRange(t *testing.T) {
 	uniqueSuffix := "-" + nanoid.Must(6)
 
 	testCases := executionTestCases{
+		"lrange 0 0 of a string value should be error": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-for-string" + uniqueSuffix),
+						protocol.NewBulkString("text"),
+					},
+					protocol.NewSimpleString("OK"),
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("LRANGE"),
+						protocol.NewBulkString("key-for-string" + uniqueSuffix),
+						protocol.NewBulkString("0"),
+						protocol.NewBulkString("0"),
+					},
+					protocol.NewSimpleError("WRONGTYPE Operation against a key holding the wrong kind of value"),
+				),
+			},
+		},
 		"lrange 0 0 returns value added last to the left": {
 			calls: []call.DataCall{
 				call.NewFromData(

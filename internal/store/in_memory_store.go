@@ -110,7 +110,10 @@ func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
 }
 
 func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([]string, error) {
-	return list.ReadRangeFromStoreList(s.keyEntries[key].data, fromIndex, toIndex)
+	if values, ok := list.ReadRangeFromStoreList(s.keyEntries[key].data, fromIndex, toIndex); ok {
+		return values, nil
+	}
+	return nil, ErrorWrongOperationType
 }
 
 func (s *InMemoryStore) Write(key string, value string, expiryOption ExpiryOption, expiry int64) {
