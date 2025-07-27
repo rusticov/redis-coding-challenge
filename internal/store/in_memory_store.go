@@ -81,8 +81,8 @@ func (s *InMemoryStore) readInteger(key string) (int64, error) {
 
 func (s *InMemoryStore) LeftPush(key string, values []string) (int64, error) {
 	oldList, _ := s.readEntry(key)
-	updatedList, err := list.LeftPushToOldList(values, oldList.data)
-	if err != nil {
+	updatedList, ok := list.LeftPushToOldList(values, oldList.data)
+	if !ok {
 		return 0, ErrorWrongOperationType
 	}
 
