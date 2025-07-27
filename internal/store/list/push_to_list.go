@@ -17,10 +17,10 @@ func LeftPushToOldList(newValues []string, oldList any) ([]string, bool) {
 	return newList, true
 }
 
-func RightPushToOldList(newValues []string, oldList any) ([]string, error) {
+func RightPushToOldList(newValues []string, oldList any) ([]string, bool) {
 	oldValues, err := parseOldList(oldList)
 	if err != nil {
-		return nil, err
+		return nil, false
 	}
 
 	newList := make([]string, len(newValues)+len(oldValues))
@@ -31,7 +31,7 @@ func RightPushToOldList(newValues []string, oldList any) ([]string, error) {
 	for i, value := range newValues {
 		newList[newValueStartIndex+i] = value
 	}
-	return newList, nil
+	return newList, true
 }
 
 func parseOldList(oldList any) ([]string, error) {
