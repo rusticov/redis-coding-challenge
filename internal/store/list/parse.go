@@ -1,10 +1,10 @@
 package list
 
-func parseList(oldList any) ([]string, bool) {
-	if oldList == nil {
+func parseListFromStoredData(storedData any) ([]string, bool) {
+	if storedData == nil {
 		return nil, true
 	}
-	if stringList, ok := oldList.([]string); ok {
+	if stringList, ok := storedData.([]string); ok {
 		return stringList, true
 	}
 	return nil, false

@@ -1,13 +1,13 @@
 package list
 
-func LeftPushToOldList(newValues []string, oldList any) ([]string, bool) {
-	oldValues, ok := parseList(oldList)
+func LeftPushToOldList(newValues []string, storedData any) ([]string, bool) {
+	storedList, ok := parseListFromStoredData(storedData)
 	if !ok {
 		return nil, false
 	}
 
-	newList := make([]string, len(newValues)+len(oldValues))
-	copy(newList[len(newValues):], oldValues)
+	newList := make([]string, len(newValues)+len(storedList))
+	copy(newList[len(newValues):], storedList)
 
 	newValueEndIndex := len(newValues) - 1
 
@@ -17,16 +17,16 @@ func LeftPushToOldList(newValues []string, oldList any) ([]string, bool) {
 	return newList, true
 }
 
-func RightPushToOldList(newValues []string, oldList any) ([]string, bool) {
-	oldValues, ok := parseList(oldList)
+func RightPushToOldList(newValues []string, storedData any) ([]string, bool) {
+	storedList, ok := parseListFromStoredData(storedData)
 	if !ok {
 		return nil, false
 	}
 
-	newList := make([]string, len(newValues)+len(oldValues))
-	copy(newList, oldValues)
+	newList := make([]string, len(newValues)+len(storedList))
+	copy(newList, storedList)
 
-	newValueStartIndex := len(oldValues)
+	newValueStartIndex := len(storedList)
 
 	for i, value := range newValues {
 		newList[newValueStartIndex+i] = value
