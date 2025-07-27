@@ -18,8 +18,8 @@ func LeftPushToOldList(newValues []string, oldList any) ([]string, bool) {
 }
 
 func RightPushToOldList(newValues []string, oldList any) ([]string, bool) {
-	oldValues, err := parseOldList(oldList)
-	if err != nil {
+	oldValues, ok := parseList(oldList)
+	if !ok {
 		return nil, false
 	}
 
@@ -32,14 +32,4 @@ func RightPushToOldList(newValues []string, oldList any) ([]string, bool) {
 		newList[newValueStartIndex+i] = value
 	}
 	return newList, true
-}
-
-func parseOldList(oldList any) ([]string, error) {
-	if oldList == nil {
-		return nil, nil
-	}
-	if stringList, ok := oldList.([]string); ok {
-		return stringList, nil
-	}
-	return nil, ErrorOldValueIsNotList
 }
