@@ -83,7 +83,7 @@ func (s *InMemoryStore) LeftPush(key string, values []string) (int64, error) {
 	oldList, _ := s.readEntry(key)
 	updatedList, err := list.LeftPushToOldList(values, oldList.data)
 	if err != nil {
-		return 0, err
+		return 0, ErrorWrongOperationType
 	}
 
 	s.keyEntries[key] = entry{
@@ -98,7 +98,7 @@ func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
 	oldList, _ := s.readEntry(key)
 	updatedList, err := list.RightPushToOldList(values, oldList.data)
 	if err != nil {
-		return 0, err
+		return 0, ErrorWrongOperationType
 	}
 
 	s.keyEntries[key] = entry{

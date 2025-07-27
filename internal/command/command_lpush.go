@@ -4,7 +4,6 @@ import (
 	"errors"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
-	"redis-challenge/internal/store/list"
 )
 
 func validateLPush(arguments []protocol.Data) (Command, protocol.Data) {
@@ -36,7 +35,7 @@ type LPushCommand struct {
 func (cmd LPushCommand) Execute(s store.Store) (protocol.Data, error) {
 	count, err := s.LeftPush(cmd.key, cmd.values)
 
-	if errors.Is(err, list.ErrorOldValueIsNotList) {
+	if errors.Is(err, store.ErrorWrongOperationType) {
 		return NewWrongOperationTypeError(), nil
 	}
 	if err != nil {

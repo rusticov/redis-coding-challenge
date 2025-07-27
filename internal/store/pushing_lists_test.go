@@ -4,7 +4,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"redis-challenge/internal/store"
-	"redis-challenge/internal/store/list"
 	"testing"
 )
 
@@ -54,7 +53,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 		_, err := s.LeftPush("key", []string{"a", "b"})
 
 		// Then the push should fail
-		assert.Equal(t, list.ErrorOldValueIsNotList, err)
+		assert.Equal(t, store.ErrorWrongOperationType, err)
 	})
 
 	t.Run("left push an expired value should set a new value with no expiry", func(t *testing.T) {
@@ -121,7 +120,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 		_, err := s.RightPush("key", []string{"a", "b"})
 
 		// Then the push should fail
-		assert.Equal(t, list.ErrorOldValueIsNotList, err)
+		assert.Equal(t, store.ErrorWrongOperationType, err)
 	})
 
 	t.Run("right push an expired value should set a new value with no expiry", func(t *testing.T) {
