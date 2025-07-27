@@ -1,8 +1,8 @@
 package list
 
 func LeftPushToOldList(newValues []string, oldList any) ([]string, bool) {
-	oldValues, err := parseOldList(oldList)
-	if err != nil {
+	oldValues, ok := parseList(oldList)
+	if !ok {
 		return nil, false
 	}
 
