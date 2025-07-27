@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -62,7 +63,10 @@ func NewChallengeServer(port int, s store.Store) (*ChallengeServer, error) {
 			default:
 				connection, err := socket.Accept()
 				if err != nil {
-					slog.Error("failed to accept connection", "error", err)
+					if errors.Is(err, net.ErrClosed) {
+						return
+					}
+					slog.Error("failed to accept on socket", "error", err)
 					continue
 				}
 
