@@ -13,8 +13,9 @@ type entry struct {
 }
 
 type InMemoryStore struct {
-	keyEntries map[string]entry
-	clock      Clock
+	keyEntries    map[string]entry
+	clock         Clock
+	expiryTracker *ExpiryTracker
 }
 
 func (s *InMemoryStore) Exists(key string) bool {
@@ -47,7 +48,10 @@ func (s *InMemoryStore) readEntry(key string) (entry, bool) {
 
 func (s *InMemoryStore) Delete(key string) bool {
 	existed := s.Exists(key)
+
 	delete(s.keyEntries, key)
+	s.expiryTracker.RemoveKey(key)
+
 	return existed
 }
 
@@ -117,6 +121,12 @@ func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([
 }
 
 func (s *InMemoryStore) Write(key string, value string, expiryOption ExpiryOption, expiry int64) {
+	if expiryOption == ExpiryOptionNone {
+		s.expiryTracker.RemoveKey(key)
+	} else {
+		s.expiryTracker.AddKey(key)
+	}
+
 	s.keyEntries[key] = entry{
 		data:                     value,
 		expiryTimeInMilliseconds: s.expiryTimeInMilliseconds(key, expiryOption, expiry),
@@ -149,6 +159,11 @@ func (s *InMemoryStore) expiryTimeInMilliseconds(key string, expiryOption Expiry
 
 func (s *InMemoryStore) Size() int {
 	return len(s.keyEntries)
+}
+
+func (s *InMemoryStore) WithExpiryTracker(tracker *ExpiryTracker) *InMemoryStore {
+	s.expiryTracker = tracker
+	return s
 }
 
 func New() *InMemoryStore {
