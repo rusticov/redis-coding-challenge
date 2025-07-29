@@ -12,7 +12,10 @@ func TestCheckingForExistence(t *testing.T) {
 
 	uniqueSuffix := "-" + nanoid.Must(6)
 
-	testCases := executionTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.ServerVariant
+	}{
 		"exists for a key that is unknown should return 0": {
 			calls: []call.DataCall{
 				call.NewFromData(

@@ -12,7 +12,10 @@ func TestDeletingValues(t *testing.T) {
 
 	uniqueSuffix := "-" + nanoid.Must(6)
 
-	testCases := executionTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.ServerVariant
+	}{
 		"deleting 1 value that has not been set should declare that 0 have been deleted": {
 			calls: []call.DataCall{
 				call.NewFromData(

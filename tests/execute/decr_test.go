@@ -12,7 +12,10 @@ func TestDecrCommand(t *testing.T) {
 
 	uniqueSuffix := "-" + nanoid.Must(6)
 
-	testCases := executionTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.ServerVariant
+	}{
 		"decrementing a value that is an integer should decrement it in the store and return the new value": {
 			calls: []call.DataCall{
 				call.NewFromData(

@@ -12,7 +12,10 @@ func TestLeftRange(t *testing.T) {
 
 	uniqueSuffix := "-" + nanoid.Must(6)
 
-	testCases := executionTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.ServerVariant
+	}{
 		"lrange 0 0 of a string value should be error": {
 			calls: []call.DataCall{
 				call.NewFromData(

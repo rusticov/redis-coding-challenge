@@ -13,7 +13,10 @@ func TestExpiry(t *testing.T) {
 
 	uniqueSuffix := "-" + nanoid.Must(6)
 
-	testCases := executionTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.ServerVariant
+	}{
 		"getting value that has expired should return nil": {
 			calls: []call.DataCall{
 				call.NewFromData(

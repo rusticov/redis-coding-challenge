@@ -12,7 +12,10 @@ func TestRightPush(t *testing.T) {
 
 	uniqueSuffix := "-" + nanoid.Must(6)
 
-	testCases := executionTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.ServerVariant
+	}{
 		"rpush 1 value to non-exists list creates the list with one value": {
 			calls: []call.DataCall{
 				call.NewFromData(
