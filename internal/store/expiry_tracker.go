@@ -14,11 +14,26 @@ func (t *ExpiryTracker) SelectKeys(count int) []string {
 		return t.keys
 	}
 
+	indexes := make(map[int]struct{}, count)
+
 	var keysToReturn = make([]string, count)
 	for i := range count {
 		index := rand.Intn(totalKeyCount)
+		for {
+			if _, ok := indexes[index]; !ok {
+				indexes[index] = struct{}{}
+				break
+			}
+
+			index++
+			if index == totalKeyCount {
+				index = 0
+			}
+		}
+
 		keysToReturn[i] = t.keys[index]
 	}
+
 	return keysToReturn
 }
 

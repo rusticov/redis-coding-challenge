@@ -40,6 +40,7 @@ func (s *InMemoryStore) readEntry(key string) (entry, bool) {
 		if expirationTime > s.clock() {
 			return keyEntry, true
 		} else {
+			s.expiryTracker.RemoveKey(key)
 			delete(s.keyEntries, key)
 		}
 	}

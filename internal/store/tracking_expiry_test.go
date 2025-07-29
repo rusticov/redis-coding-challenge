@@ -70,6 +70,32 @@ func TestTrackingExpiry(t *testing.T) {
 		assert.Empty(t, tracker.SelectKeys(10), "should have key removed")
 	})
 
+	t.Run("checking existence of an expired key should mean key is not tracked", func(t *testing.T) {
+		clock := store.FixedClock{}
+		tracker := store.NewExpiryTracker()
+		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
+
+		s.Write("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
+
+		clock.AddSeconds(2)
+
+		s.Exists("key")
+
+		assert.Empty(t, tracker.SelectKeys(10), "should have key removed")
+	})
+
+	t.Run("checking existence of an non-expired key should mean key is tracked", func(t *testing.T) {
+		clock := store.FixedClock{}
+		tracker := store.NewExpiryTracker()
+		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
+
+		s.Write("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
+
+		s.Exists("key")
+
+		assert.Equal(t, []string{"key"}, tracker.SelectKeys(10), "should have key removed")
+	})
+
 	t.Run("random keys are selected up to requested count", func(t *testing.T) {
 		tracker := store.NewExpiryTracker()
 		s := store.New().WithExpiryTracker(tracker)
