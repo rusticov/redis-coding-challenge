@@ -8,7 +8,10 @@ import (
 )
 
 func TestSetValidation(t *testing.T) {
-	testCases := validationTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.SelectTestCaseDriver
+	}{
 		"set command with no arguments has the wrong length": {
 			calls: []call.DataCall{
 				call.NewFromData(

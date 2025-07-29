@@ -8,7 +8,10 @@ import (
 )
 
 func TestPingValidation(t *testing.T) {
-	testCases := validationTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.SelectTestCaseDriver
+	}{
 		"ping command with no arguments is ok": {
 			calls: []call.DataCall{
 				call.NewFromDataWithoutError(

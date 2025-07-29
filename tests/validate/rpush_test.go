@@ -8,7 +8,10 @@ import (
 )
 
 func TestRightPushValidation(t *testing.T) {
-	testCases := validationTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.SelectTestCaseDriver
+	}{
 		"rpush command with no arguments has the wrong length": {
 			calls: []call.DataCall{
 				call.NewFromData(

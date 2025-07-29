@@ -7,13 +7,11 @@ import (
 	"testing"
 )
 
-type validationTestCases map[string]struct {
-	calls        []call.DataCall
-	driverChoice tests.SelectTestCaseDriver
-}
-
 func TestEchoValidation(t *testing.T) {
-	testCases := validationTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.SelectTestCaseDriver
+	}{
 		"echo command with no arguments has the wrong length": {
 			calls: []call.DataCall{
 				call.NewFromData(

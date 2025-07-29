@@ -8,7 +8,10 @@ import (
 )
 
 func TestExistsValidation(t *testing.T) {
-	testCases := validationTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.SelectTestCaseDriver
+	}{
 		"exists command with no arguments has the wrong length": {
 			calls: []call.DataCall{
 				call.NewFromData(

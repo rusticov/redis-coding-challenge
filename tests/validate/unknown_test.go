@@ -8,7 +8,10 @@ import (
 )
 
 func TestUnknownCommandValidation(t *testing.T) {
-	testCases := validationTestCases{
+	testCases := map[string]struct {
+		calls        []call.DataCall
+		driverChoice tests.SelectTestCaseDriver
+	}{
 		"command 'UNKNOWN' is not a valid command": {
 			calls: []call.DataCall{
 				call.NewFromDataWithPartialError(
