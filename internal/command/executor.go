@@ -1,6 +1,7 @@
 package command
 
 import (
+	"context"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
 	"time"
@@ -23,40 +24,48 @@ type execution struct {
 
 const callsToStoreQueueSize = 1000
 
-func NewStoreExecutor(s store.Store, scanner Scanner) Executor {
+func NewStoreExecutor(ctx context.Context, s store.Store, scanner Scanner) Executor {
 	executionChannel := make(chan execution, callsToStoreQueueSize)
 
-	go triggerRepeatedExpiryScan(executionChannel, scanner)
+	go triggerRepeatedExpiryScan(ctx, executionChannel, scanner)
 
-	go executeCommandsAgainstStore(executionChannel, s)
+	go executeCommandsAgainstStore(ctx, executionChannel, s)
 
 	return storeExecutor{executionChannel: executionChannel}
 }
 
-func triggerRepeatedExpiryScan(executionChannel chan<- execution, scanner Scanner) {
+func triggerRepeatedExpiryScan(ctx context.Context, executionChannel chan<- execution, scanner Scanner) {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		executionChannel <- execution{scan: scanner}
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			executionChannel <- execution{scan: scanner}
+		}
 	}
 }
 
-func executeCommandsAgainstStore(executionChannel <-chan execution, s store.Store) { // TODO handle clean closing of this goroutine on server close
+func executeCommandsAgainstStore(ctx context.Context, executionChannel <-chan execution, s store.Store) {
 	for {
-		e := <-executionChannel
+		select {
+		case <-ctx.Done():
+			return
+		case e := <-executionChannel:
+			switch {
+			case e.scan != nil:
+				e.scan.Scan()
+			case e.cmd != nil:
+				data, err := e.cmd.Execute(s)
 
-		switch {
-		case e.scan != nil:
-			e.scan.Scan()
-		case e.cmd != nil:
-			data, err := e.cmd.Execute(s)
-
-			if err != nil {
-				e.errors <- err
-				continue
+				if err != nil {
+					e.errors <- err
+					continue
+				}
+				e.response <- data
 			}
-			e.response <- data
 		}
 	}
 }

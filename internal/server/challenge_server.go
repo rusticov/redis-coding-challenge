@@ -47,7 +47,6 @@ func (c *ChallengeServer) AddMonitor(monitor MonitorChannel) {
 }
 
 func NewChallengeServer(port int, s store.Store, scanner command.Scanner) (*ChallengeServer, error) {
-	executor := command.NewStoreExecutor(s, scanner)
 
 	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
@@ -55,6 +54,8 @@ func NewChallengeServer(port int, s store.Store, scanner command.Scanner) (*Chal
 	}
 
 	ctx, cancelFunction := context.WithCancel(context.Background())
+
+	executor := command.NewStoreExecutor(ctx, s, scanner)
 
 	go func() {
 		for {
