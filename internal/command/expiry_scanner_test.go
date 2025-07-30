@@ -16,7 +16,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
 
-		scanner := command.NewExpiryScanner(tracker, s).WithRandomCount(20).WithContinuePurgeCount(4)
+		scanner := command.NewExpiryScanner(tracker, s)
 
 		s.Write("key", "value", store.ExpiryOptionExpirySeconds, 1)
 
@@ -34,7 +34,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
 
-		scanner := command.NewExpiryScanner(tracker, s).WithRandomCount(20).WithContinuePurgeCount(4)
+		scanner := command.NewExpiryScanner(tracker, s)
 
 		s.Write("key", "value", store.ExpiryOptionExpirySeconds, 1)
 
@@ -50,7 +50,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
 
-		scanner := command.NewExpiryScanner(tracker, s).WithRandomCount(20).WithContinuePurgeCount(4)
+		scanner := command.NewExpiryScanner(tracker, s)
 
 		s.Write("key1", "value", store.ExpiryOptionExpirySeconds, 1)
 		s.Write("key2", "value", store.ExpiryOptionExpirySeconds, 4)
@@ -76,7 +76,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
 
-		scanner := command.NewExpiryScanner(tracker, s).WithRandomCount(20).WithContinuePurgeCount(4)
+		scanner := command.NewExpiryScanner(tracker, s)
 
 		for i := range 100 {
 			s.Write(fmt.Sprintf("key%d", i), "value", store.ExpiryOptionExpirySeconds, 1)

@@ -26,21 +26,11 @@ func (s ExpiryScanner) PurgeExpiredKeys() {
 	}
 }
 
-func (s ExpiryScanner) WithRandomCount(count int) ExpiryScanner {
-	s.randomCount = count
-	return s
-}
-
-func (s ExpiryScanner) WithContinuePurgeCount(continuePurgeCount int) ExpiryScanner {
-	s.continuePurgeCount = continuePurgeCount
-	return s
-}
-
 func NewExpiryScanner(tracker *store.ExpiryTracker, s store.Store) *ExpiryScanner {
 	return &ExpiryScanner{
 		tracker:            tracker,
 		store:              s,
 		randomCount:        20,
-		continuePurgeCount: 4,
+		continuePurgeCount: 6, // if more than 25% are purged
 	}
 }
