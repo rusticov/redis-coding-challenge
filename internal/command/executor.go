@@ -26,35 +26,39 @@ const callsToStoreQueueSize = 1000
 func NewStoreExecutor(s store.Store, scanner Scanner) Executor {
 	executionChannel := make(chan execution, callsToStoreQueueSize)
 
-	go func() {
-		ticker := time.NewTicker(100 * time.Millisecond)
-		defer ticker.Stop()
+	go triggerRepeatedExpiryScan(executionChannel, scanner)
 
-		for range ticker.C {
-			executionChannel <- execution{scan: scanner}
-		}
-	}()
-
-	go func() { // TODO handle clean closing of this goroutine on server close
-		for {
-			e := <-executionChannel
-
-			switch {
-			case e.scan != nil:
-				scanner.Scan()
-			case e.cmd != nil:
-				data, err := e.cmd.Execute(s)
-
-				if err != nil {
-					e.errors <- err
-					continue
-				}
-				e.response <- data
-			}
-		}
-	}()
+	go executeCommandsAgainstStore(executionChannel, s)
 
 	return storeExecutor{executionChannel: executionChannel}
+}
+
+func triggerRepeatedExpiryScan(executionChannel chan<- execution, scanner Scanner) {
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		executionChannel <- execution{scan: scanner}
+	}
+}
+
+func executeCommandsAgainstStore(executionChannel <-chan execution, s store.Store) { // TODO handle clean closing of this goroutine on server close
+	for {
+		e := <-executionChannel
+
+		switch {
+		case e.scan != nil:
+			e.scan.Scan()
+		case e.cmd != nil:
+			data, err := e.cmd.Execute(s)
+
+			if err != nil {
+				e.errors <- err
+				continue
+			}
+			e.response <- data
+		}
+	}
 }
 
 type storeExecutor struct {
