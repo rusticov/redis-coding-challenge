@@ -45,8 +45,8 @@ func (c *ChallengeServer) AddMonitor(monitor MonitorChannel) {
 	c.monitor = monitor
 }
 
-func NewChallengeServer(port int, s store.Store) (*ChallengeServer, error) {
-	executor := command.NewStoreExecutor(s)
+func NewChallengeServer(port int, s store.Store, scanner command.Scanner) (*ChallengeServer, error) {
+	executor := command.NewStoreExecutor(s, scanner)
 
 	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {

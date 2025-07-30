@@ -3,6 +3,7 @@ package tests
 import (
 	"github.com/stretchr/testify/require"
 	"net"
+	"redis-challenge/internal/command"
 	"redis-challenge/internal/server"
 	"redis-challenge/internal/store"
 	"redis-challenge/tests/call"
@@ -83,7 +84,11 @@ func createTestServer(t testing.TB, clock store.Clock, variant ...ServerVariant)
 	case UseRealRedisServer:
 		return NewRealRedisServer()
 	default:
-		challengeServer, err := server.NewChallengeServer(0, store.NewWithClock(clock))
+		tracker := store.NewExpiryTracker()
+		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
+		scanner := command.NewExpiryScanner(tracker, s)
+
+		challengeServer, err := server.NewChallengeServer(0, s, scanner)
 		require.NoError(t, err)
 		return challengeServer
 	}

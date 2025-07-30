@@ -9,7 +9,7 @@ type ExpiryScanner struct {
 	continuePurgeCount int
 }
 
-func (s ExpiryScanner) PurgeExpiredKeys() {
+func (s ExpiryScanner) Scan() {
 	for {
 		selection := s.tracker.SelectKeys(s.randomCount)
 

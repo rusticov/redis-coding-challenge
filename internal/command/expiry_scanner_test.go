@@ -22,7 +22,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		clock.AddSeconds(2)
 
-		scanner.PurgeExpiredKeys()
+		scanner.Scan()
 
 		assert.Empty(t, tracker.SelectKeys(1), "no more keys marked as expired")
 		assert.Equal(t, 0, s.Size(), "no more keys in store after only key is purged")
@@ -38,7 +38,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		s.Write("key", "value", store.ExpiryOptionExpirySeconds, 1)
 
-		scanner.PurgeExpiredKeys()
+		scanner.Scan()
 
 		assert.Contains(t, tracker.SelectKeys(1), "key", "key is still tracked as it has an expiry")
 		assert.True(t, s.Exists("key"), "key is still in store as it has not yet expired")
@@ -59,7 +59,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		clock.AddSeconds(3)
 
-		scanner.PurgeExpiredKeys()
+		scanner.Scan()
 
 		remainingSelection := tracker.SelectKeys(10)
 
@@ -85,7 +85,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		clock.AddSeconds(10)
 
-		scanner.PurgeExpiredKeys()
+		scanner.Scan()
 
 		remainingSelection := tracker.SelectKeys(10)
 
