@@ -8,6 +8,7 @@ import (
 var validators = map[string]validator{
 	"PING":   validatePing,
 	"ECHO":   validateEcho,
+	"CONFIG": validateConfig,
 	"DECR":   validateDecr,
 	"DEL":    validateDel,
 	"EXISTS": validateExists,

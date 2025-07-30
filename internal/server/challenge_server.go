@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"redis-challenge/internal/command"
@@ -97,6 +98,10 @@ func connectionHandler(connection net.Conn, executor command.Executor) {
 	for {
 		bytesRead, err := connection.Read(readBuffer)
 		if err != nil {
+			if err == io.EOF {
+				return
+			}
+
 			slog.Error("failed to read request", "error", err)
 			return
 		}
