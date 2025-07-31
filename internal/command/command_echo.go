@@ -5,7 +5,9 @@ import (
 	"redis-challenge/internal/store"
 )
 
-func validateEcho(arguments []protocol.Data) (Command, protocol.Data) {
+type EchoValidator struct{}
+
+func (EchoValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
 	if len(arguments) != 1 {
 		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'echo' command")
 	}

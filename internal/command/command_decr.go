@@ -4,7 +4,9 @@ import (
 	"redis-challenge/internal/protocol"
 )
 
-func validateDecr(arguments []protocol.Data) (Command, protocol.Data) {
+type DecrValidator struct{}
+
+func (DecrValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
 	var key string
 
 	if len(arguments) > 0 {

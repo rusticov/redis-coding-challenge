@@ -6,21 +6,23 @@ import (
 )
 
 var validators = map[string]validator{
-	"PING":   validatePing,
-	"ECHO":   validateEcho,
-	"CONFIG": validateConfig,
-	"DECR":   validateDecr,
-	"DEL":    validateDel,
-	"EXISTS": validateExists,
-	"INCR":   validateIncr,
-	"GET":    validateGet,
-	"LPUSH":  validateLPush,
-	"LRANGE": validateLRange,
-	"RPUSH":  validateRPush,
-	"SET":    validateSet,
+	"PING":   PingValidator{},
+	"ECHO":   EchoValidator{},
+	"CONFIG": ConfigValidator{},
+	"DECR":   DecrValidator{},
+	"DEL":    DelValidator{},
+	"EXISTS": ExistsValidator{},
+	"INCR":   IncrValidator{},
+	"GET":    GetValidator{},
+	"LPUSH":  LPushValidator{},
+	"LRANGE": LRangeValidator{},
+	"RPUSH":  RPushValidator{},
+	"SET":    SetValidator{},
 }
 
-type validator func(arguments []protocol.Data) (Command, protocol.Data)
+type validator interface {
+	Validate(arguments []protocol.Data) (Command, protocol.Data)
+}
 
 func Validate(data protocol.Data) (Command, protocol.Data) {
 	commandData, errorData := FromData(data)
@@ -29,7 +31,7 @@ func Validate(data protocol.Data) (Command, protocol.Data) {
 	}
 
 	if v, ok := validators[commandData.Name]; ok {
-		return v(commandData.Arguments)
+		return v.Validate(commandData.Arguments)
 	}
 
 	return nil, protocol.NewSimpleError(fmt.Sprintf("ERR unknown command '%s'", commandData.Name))

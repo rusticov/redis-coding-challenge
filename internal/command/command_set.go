@@ -6,7 +6,9 @@ import (
 	"strconv"
 )
 
-func validateSet(arguments []protocol.Data) (Command, protocol.Data) {
+type SetValidator struct{}
+
+func (SetValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
 	if len(arguments) > 0 && arguments[0].Symbol() != protocol.BulkStringSymbol {
 		return nil, NewWrongDataTypeError(arguments[0], protocol.BulkStringSymbol)
 	}

@@ -7,7 +7,9 @@ import (
 	"strconv"
 )
 
-func validateLRange(arguments []protocol.Data) (Command, protocol.Data) {
+type LRangeValidator struct{}
+
+func (LRangeValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
 	var cmd LRangeCommand
 
 	if len(arguments) > 0 {

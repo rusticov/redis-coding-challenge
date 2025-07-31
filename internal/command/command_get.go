@@ -6,7 +6,9 @@ import (
 	"redis-challenge/internal/store"
 )
 
-func validateGet(arguments []protocol.Data) (Command, protocol.Data) {
+type GetValidator struct{}
+
+func (GetValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
 	if len(arguments) != 1 {
 		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'get' command")
 	}

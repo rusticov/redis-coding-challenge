@@ -5,7 +5,9 @@ import (
 	"redis-challenge/internal/store"
 )
 
-func validateConfig(_ []protocol.Data) (Command, protocol.Data) {
+type ConfigValidator struct{}
+
+func (ConfigValidator) Validate(_ []protocol.Data) (Command, protocol.Data) {
 	return ConfigCommand{}, nil
 }
 

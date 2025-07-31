@@ -5,7 +5,9 @@ import (
 	"redis-challenge/internal/store"
 )
 
-func validateDel(arguments []protocol.Data) (Command, protocol.Data) {
+type DelValidator struct{}
+
+func (DelValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
 	if len(arguments) == 0 {
 		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'del' command")
 	}

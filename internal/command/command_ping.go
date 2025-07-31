@@ -5,7 +5,9 @@ import (
 	"redis-challenge/internal/store"
 )
 
-func validatePing(arguments []protocol.Data) (Command, protocol.Data) {
+type PingValidator struct{}
+
+func (PingValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
 	switch len(arguments) {
 	case 0:
 		return PingCommand{response: protocol.NewSimpleString("PONG")}, nil

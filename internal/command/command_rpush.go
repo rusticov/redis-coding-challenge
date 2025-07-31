@@ -6,7 +6,9 @@ import (
 	"redis-challenge/internal/store"
 )
 
-func validateRPush(arguments []protocol.Data) (Command, protocol.Data) {
+type RPushValidator struct{}
+
+func (RPushValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
 	values := make([]string, len(arguments))
 	for i, arg := range arguments {
 		if _, ok := arguments[i].(protocol.BulkString); ok {

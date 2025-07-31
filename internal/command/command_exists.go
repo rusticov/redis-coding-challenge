@@ -5,7 +5,9 @@ import (
 	"redis-challenge/internal/store"
 )
 
-func validateExists(arguments []protocol.Data) (Command, protocol.Data) {
+type ExistsValidator struct{}
+
+func (ExistsValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
 	if len(arguments) == 0 {
 		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'exists' command")
 	}
