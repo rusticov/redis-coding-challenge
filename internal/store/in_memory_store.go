@@ -128,34 +128,43 @@ func (s *InMemoryStore) Write(key string, value string, expiryOption ExpiryOptio
 		s.expiryTracker.AddKey(key)
 	}
 
-	s.keyEntries[key] = entry{
-		data:                     value,
-		expiryTimeInMilliseconds: s.expiryTimeInMilliseconds(key, expiryOption, expiry),
+	expiryTimestamp, ok := s.expiryTimeInMilliseconds(key, expiryOption, expiry)
+
+	if ok {
+		s.keyEntries[key] = entry{
+			data:                     value,
+			expiryTimeInMilliseconds: expiryTimestamp,
+		}
 	}
 }
 
-func (s *InMemoryStore) expiryTimeInMilliseconds(key string, expiryOption ExpiryOption, expiry int64) int64 {
+func (s *InMemoryStore) expiryTimeInMilliseconds(key string, expiryOption ExpiryOption, expiry int64) (int64, bool) {
+	now := s.clock()
+
+	var expiryTimestamp int64
 	switch expiryOption {
 	case ExpiryOptionNone:
-		return maximumTimeInFuture
+		expiryTimestamp = maximumTimeInFuture
 
 	case ExpiryOptionExpiryMilliseconds:
-		return s.clock() + expiry
+		expiryTimestamp = now + expiry
 	case ExpiryOptionExpirySeconds:
-		return s.clock() + expiry*1000
+		expiryTimestamp = now + expiry*1000
 
 	case ExpiryOptionExpiryUnixTimeInMilliseconds:
-		return expiry
+		expiryTimestamp = expiry
 	case ExpiryOptionExpiryUnixTimeInSeconds:
-		return expiry * 1000
+		expiryTimestamp = expiry * 1000
 
 	case ExpiryOptionExpiryKeepTTL:
 		if keyEntry, ok := s.keyEntries[key]; ok {
-			return keyEntry.expiryTimeInMilliseconds
+			expiryTimestamp = keyEntry.expiryTimeInMilliseconds
+		} else {
+			expiryTimestamp = maximumTimeInFuture
 		}
 	}
 
-	return maximumTimeInFuture
+	return expiryTimestamp, expiryTimestamp > now
 }
 
 func (s *InMemoryStore) Size() int {
