@@ -58,8 +58,8 @@ func TestPushingListsIntoStore(t *testing.T) {
 
 	t.Run("left push an expired value should set a new value with no expiry", func(t *testing.T) {
 		// Given store with an expired string value
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
 		clock.AddSeconds(1).AddMilliseconds(1)
@@ -125,8 +125,8 @@ func TestPushingListsIntoStore(t *testing.T) {
 
 	t.Run("right push an expired value should set a new value with no expiry", func(t *testing.T) {
 		// Given store with an expired string value
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
 		clock.AddSeconds(1).AddMilliseconds(1)

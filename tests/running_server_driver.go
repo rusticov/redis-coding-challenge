@@ -37,7 +37,7 @@ func (s ServerVariant) Sleep(clock *store.FixedClock, c call.Call) {
 func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ServerVariant) {
 	clock := &store.FixedClock{TimeInMilliseconds: time.Now().UnixMilli()}
 
-	testServer := createTestServer(t, clock.Now, variant)
+	testServer := createTestServer(t, clock, variant)
 	defer func() {
 		require.NoError(t, testServer.Close(), "failed to close test server")
 	}()

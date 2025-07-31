@@ -11,10 +11,10 @@ import (
 func TestExpiryScanner(t *testing.T) {
 
 	t.Run("purge key when it has become expired", func(t *testing.T) {
-		clock := store.FixedClock{}
+		clock := &store.FixedClock{}
 		tracker := store.NewExpiryTracker()
 
-		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
+		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 
 		scanner := command.NewExpiryScanner(tracker, s)
 
@@ -29,10 +29,10 @@ func TestExpiryScanner(t *testing.T) {
 	})
 
 	t.Run("not successfully purge key when it has an expiry but is it not expired", func(t *testing.T) {
-		clock := store.FixedClock{}
+		clock := &store.FixedClock{}
 		tracker := store.NewExpiryTracker()
 
-		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
+		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 
 		scanner := command.NewExpiryScanner(tracker, s)
 
@@ -45,10 +45,10 @@ func TestExpiryScanner(t *testing.T) {
 	})
 
 	t.Run("purge all expired keys if random selection includes all keys with expiry", func(t *testing.T) {
-		clock := store.FixedClock{}
+		clock := &store.FixedClock{}
 		tracker := store.NewExpiryTracker()
 
-		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
+		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 
 		scanner := command.NewExpiryScanner(tracker, s)
 
@@ -71,10 +71,10 @@ func TestExpiryScanner(t *testing.T) {
 	})
 
 	t.Run("purge more than count when a purge fraction exceeds defined limit", func(t *testing.T) {
-		clock := store.FixedClock{}
+		clock := &store.FixedClock{}
 		tracker := store.NewExpiryTracker()
 
-		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
+		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 
 		scanner := command.NewExpiryScanner(tracker, s)
 

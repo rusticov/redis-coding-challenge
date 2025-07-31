@@ -2,9 +2,13 @@ package store
 
 import "time"
 
-type Clock func() int64
+type Clock interface {
+	Now() int64
+}
 
-func CurrentSystemTime() int64 {
+type SystemClock struct{}
+
+func (c SystemClock) Now() int64 {
 	return time.Now().UTC().UnixMilli()
 }
 

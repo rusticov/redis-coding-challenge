@@ -37,7 +37,7 @@ func (s *InMemoryStore) readEntry(key string) (entry, bool) {
 	if keyEntry, ok := s.keyEntries[key]; ok {
 		expirationTime := keyEntry.expiryTimeInMilliseconds
 
-		if expirationTime > s.clock() {
+		if expirationTime > s.clock.Now() {
 			return keyEntry, true
 		} else {
 			s.expiryTracker.RemoveKey(key)
@@ -139,7 +139,7 @@ func (s *InMemoryStore) Write(key string, value string, expiryOption ExpiryOptio
 }
 
 func (s *InMemoryStore) expiryTimeInMilliseconds(key string, expiryOption ExpiryOption, expiry int64) (int64, bool) {
-	now := s.clock()
+	now := s.clock.Now()
 
 	var expiryTimestamp int64
 	switch expiryOption {
@@ -177,7 +177,7 @@ func (s *InMemoryStore) WithExpiryTracker(tracker *ExpiryTracker) *InMemoryStore
 }
 
 func New() *InMemoryStore {
-	return NewWithClock(CurrentSystemTime)
+	return NewWithClock(SystemClock{})
 }
 
 func NewWithClock(clock Clock) *InMemoryStore {

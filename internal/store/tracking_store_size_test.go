@@ -60,8 +60,8 @@ func TestTrackingStoreSize(t *testing.T) {
 	})
 
 	t.Run("reading an expired value should remove it from the store", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key1", "value", store.ExpiryOptionExpiryMilliseconds, 1)
 		s.Write("key2", "value", store.ExpiryOptionNone, 0)
@@ -106,8 +106,8 @@ func TestTrackingStoreSize(t *testing.T) {
 	t.Run("setting key that is already expired should not be added to the store", func(t *testing.T) {
 		for name, tc := range expiredTestCases {
 			t.Run(name, func(t *testing.T) {
-				clock := store.FixedClock{TimeInMilliseconds: 2_000}
-				s := store.NewWithClock(clock.Now)
+				clock := &store.FixedClock{TimeInMilliseconds: 2_000}
+				s := store.NewWithClock(clock)
 
 				s.Write("key2", "value", tc.option, tc.expiry)
 
@@ -119,8 +119,8 @@ func TestTrackingStoreSize(t *testing.T) {
 	t.Run("setting key that is already just expired should not be added to the store", func(t *testing.T) {
 		for name, tc := range expiredTestCases {
 			t.Run(name, func(t *testing.T) {
-				clock := store.FixedClock{TimeInMilliseconds: 2_000}
-				s := store.NewWithClock(clock.Now)
+				clock := &store.FixedClock{TimeInMilliseconds: 2_000}
+				s := store.NewWithClock(clock)
 
 				s.Write("key2", "value", tc.option, tc.exactExpiry)
 

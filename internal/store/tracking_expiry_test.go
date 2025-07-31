@@ -71,9 +71,9 @@ func TestTrackingExpiry(t *testing.T) {
 	})
 
 	t.Run("checking existence of an expired key should mean key is not tracked", func(t *testing.T) {
-		clock := store.FixedClock{}
+		clock := &store.FixedClock{}
 		tracker := store.NewExpiryTracker()
-		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
+		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 
 		s.Write("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
 
@@ -85,9 +85,9 @@ func TestTrackingExpiry(t *testing.T) {
 	})
 
 	t.Run("checking existence of an non-expired key should mean key is tracked", func(t *testing.T) {
-		clock := store.FixedClock{}
+		clock := &store.FixedClock{}
 		tracker := store.NewExpiryTracker()
-		s := store.NewWithClock(clock.Now).WithExpiryTracker(tracker)
+		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 
 		s.Write("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
 

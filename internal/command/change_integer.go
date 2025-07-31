@@ -1,6 +1,7 @@
 package command
 
 import (
+	"errors"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
 )
@@ -12,7 +13,7 @@ type ChangeIntegerCommand struct {
 
 func (cmd ChangeIntegerCommand) Execute(s store.Store) (protocol.Data, error) {
 	value, err := s.Increment(cmd.key, cmd.change)
-	if err == store.ErrorWrongOperationType {
+	if errors.Is(err, store.ErrorWrongOperationType) {
 		return NewWrongOperationTypeError(), nil
 	}
 	if err != nil {

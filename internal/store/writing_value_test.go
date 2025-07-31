@@ -18,8 +18,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("write value into store with expiry time in milliseconds should not exist when expiration time has passed", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpiryUnixTimeInMilliseconds, 2_000)
 
@@ -29,8 +29,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("write value into store with expiry time in milliseconds set into the future", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpiryUnixTimeInMilliseconds, 2_000)
 
@@ -38,8 +38,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("write value into store with expiry time in milliseconds should exist when expiration time is close but not yet passed", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpiryUnixTimeInMilliseconds, 2_000)
 
@@ -49,8 +49,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("write value into store with expiry time in seconds should not exist when expiration time has passed", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpiryUnixTimeInSeconds, 2)
 
@@ -60,8 +60,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("write value into store with expiry time in seconds should exist when expiration time has not yet passed", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpiryUnixTimeInSeconds, 2)
 
@@ -71,8 +71,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("write value into store with expiry in milliseconds should not exist when expiration time has passed", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
 
@@ -82,8 +82,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("write value into store with expiry in milliseconds should exist when expiration time has not yet passed", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
 
@@ -93,8 +93,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("write value into store with expiry in seconds should not exist when expiration time has passed", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpirySeconds, 1)
 
@@ -104,8 +104,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("write value into store with expiry in seconds should exist when expiration time has not yet passed", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpirySeconds, 1)
 
@@ -115,8 +115,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("overwrite unexpired value with expiry with KEEPTTL should not exist when expiration time of previous value has passed", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
 		s.Write("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
@@ -127,8 +127,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("overwrite unexpired value with expiry with KEEPTTL should exist when expiration time of previous value has not yet passed", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value 1", store.ExpiryOptionExpirySeconds, 1)
 		s.Write("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
@@ -139,8 +139,8 @@ func TestWritingExpiry(t *testing.T) {
 	})
 
 	t.Run("write new value with KEEPTTL of should exist", func(t *testing.T) {
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value 2", store.ExpiryOptionExpiryKeepTTL, 0)
 
@@ -149,8 +149,8 @@ func TestWritingExpiry(t *testing.T) {
 
 	t.Run("incrementing an expired value should set a new value with no expiry", func(t *testing.T) {
 		// Given store with an expired string value
-		clock := store.FixedClock{TimeInMilliseconds: 1_000}
-		s := store.NewWithClock(clock.Now)
+		clock := &store.FixedClock{TimeInMilliseconds: 1_000}
+		s := store.NewWithClock(clock)
 
 		s.Write("key", "value", store.ExpiryOptionExpiryMilliseconds, 1_000)
 		clock.AddSeconds(1).AddMilliseconds(1)

@@ -15,9 +15,9 @@ func ExpiryTimestamp(clock store.Clock, option store.ExpiryOption, expiry int64)
 	case store.ExpiryOptionExpiryUnixTimeInSeconds:
 		timestamp = expiry * 1000
 	case store.ExpiryOptionExpiryMilliseconds:
-		timestamp = clock() + expiry
+		timestamp = clock.Now() + expiry
 	case store.ExpiryOptionExpirySeconds:
-		timestamp = clock() + expiry*1000
+		timestamp = clock.Now() + expiry*1000
 	}
 
 	return store.ExpiryOptionExpiryUnixTimeInMilliseconds, timestamp

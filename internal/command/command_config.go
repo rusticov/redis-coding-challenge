@@ -12,6 +12,6 @@ func validateConfig(_ []protocol.Data) (Command, protocol.Data) {
 type ConfigCommand struct {
 }
 
-func (cmd ConfigCommand) Execute(s store.Store) (protocol.Data, error) {
+func (cmd ConfigCommand) Execute(_ store.Store) (protocol.Data, error) {
 	return nil, nil
 }
