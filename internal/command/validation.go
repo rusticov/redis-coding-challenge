@@ -3,6 +3,7 @@ package command
 import (
 	"fmt"
 	"redis-challenge/internal/protocol"
+	"redis-challenge/internal/store"
 )
 
 var validators = map[string]validator{
@@ -17,7 +18,7 @@ var validators = map[string]validator{
 	"LPUSH":  LPushValidator{},
 	"LRANGE": LRangeValidator{},
 	"RPUSH":  RPushValidator{},
-	"SET":    SetValidator{},
+	"SET":    &SetValidator{clock: store.SystemClock{}},
 }
 
 type validator interface {

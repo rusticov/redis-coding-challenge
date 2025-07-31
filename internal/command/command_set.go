@@ -6,9 +6,11 @@ import (
 	"strconv"
 )
 
-type SetValidator struct{}
+type SetValidator struct {
+	clock store.Clock
+}
 
-func (SetValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
+func (v *SetValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
 	if len(arguments) > 0 && arguments[0].Symbol() != protocol.BulkStringSymbol {
 		return nil, NewWrongDataTypeError(arguments[0], protocol.BulkStringSymbol)
 	}
@@ -21,8 +23,10 @@ func (SetValidator) Validate(arguments []protocol.Data) (Command, protocol.Data)
 	}
 
 	cmd := SetCommand{
-		key:   string(arguments[0].(protocol.BulkString)),
-		value: string(arguments[1].(protocol.BulkString)),
+		key:          string(arguments[0].(protocol.BulkString)),
+		value:        string(arguments[1].(protocol.BulkString)),
+		expiryOption: store.ExpiryOptionNone,
+		expiry:       0,
 	}
 
 	var needTimeValue bool
@@ -34,8 +38,9 @@ func (SetValidator) Validate(arguments []protocol.Data) (Command, protocol.Data)
 				if err != nil {
 					return nil, NewSyntaxError()
 				}
-				cmd.expiry = expiry
+
 				needTimeValue = false
+				cmd.expiryOption, cmd.expiry = ExpiryTimestamp(v.clock, cmd.expiryOption, expiry)
 				continue
 			}
 
