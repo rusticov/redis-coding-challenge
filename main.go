@@ -9,14 +9,9 @@ import (
 )
 
 func main() {
-	tracker := store.NewExpiryTracker()
-	dataStore := store.New().WithExpiryTracker(tracker)
-
-	scanner := store.NewExpiryScanner(tracker, dataStore)
-
 	serverMonitor := make(server.MonitorChannel)
 
-	srv, err := server.NewChallengeServer(0, dataStore, scanner).
+	srv, err := server.NewChallengeServer(0, store.NewBuilder()).
 		WithMonitorChannel(serverMonitor).
 		Start()
 	if err != nil {

@@ -176,6 +176,11 @@ func (s *InMemoryStore) WithExpiryTracker(tracker *ExpiryTracker) *InMemoryStore
 	return s
 }
 
+func (s *InMemoryStore) WithClock(clock Clock) *InMemoryStore {
+	s.clock = clock
+	return s
+}
+
 func New() *InMemoryStore {
 	return NewWithClock(SystemClock{})
 }

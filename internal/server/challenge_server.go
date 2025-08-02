@@ -43,18 +43,17 @@ func (c *ChallengeServer) Close() error {
 
 type ChallengeServerBuilder struct {
 	port           int
-	store          store.Store
-	scanner        command.Scanner
+	builder        store.Builder
 	writer         io.Writer
+	reader         io.Reader
 	monitorChannel MonitorChannel
 	err            error
 }
 
-func NewChallengeServer(port int, s store.Store, scanner command.Scanner) *ChallengeServerBuilder {
+func NewChallengeServer(port int, builder store.Builder) *ChallengeServerBuilder {
 	return &ChallengeServerBuilder{
 		port:    port,
-		store:   s,
-		scanner: scanner,
+		builder: builder,
 		writer:  io.Discard,
 	}
 }
@@ -81,8 +80,14 @@ func (b *ChallengeServerBuilder) Start() (*ChallengeServer, error) {
 
 	ctx, cancelFunction := context.WithCancel(context.Background())
 
+	s, scanner := b.builder.Build()
+
+	if b.reader != nil {
+		b.restoreFromArchive(s)
+	}
+
 	handler := connectionHandler{
-		executor: command.NewStoreExecutor(ctx, b.store, b.scanner, b.writer),
+		executor: command.NewStoreExecutor(ctx, s, scanner, b.writer),
 	}
 
 	go func() {
@@ -114,9 +119,14 @@ func (b *ChallengeServerBuilder) Start() (*ChallengeServer, error) {
 }
 
 func (b *ChallengeServerBuilder) RestoreFromArchive(reader io.Reader) *ChallengeServerBuilder {
-	r := restorer{store: b.store}
+	b.reader = reader
+	return b
+}
 
-	err := r.RestoreFromLog(reader)
+func (b *ChallengeServerBuilder) restoreFromArchive(s store.Store) *ChallengeServerBuilder {
+	r := restorer{store: s}
+
+	err := r.RestoreFromLog(b.reader)
 	if err != nil {
 		b.err = err
 	}

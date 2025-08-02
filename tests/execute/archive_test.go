@@ -49,11 +49,7 @@ func TestWritingToArchive(t *testing.T) {
 			buffer := bytes.NewBuffer(nil)
 			tests.DriveProtocolAgainstServer(t, testCase.calls, testCase.driverChoice, buffer)
 
-			tracker := store.NewExpiryTracker()
-			s := store.New().WithExpiryTracker(tracker)
-			scanner := store.NewExpiryScanner(tracker, s)
-
-			restoredServer, err := server.NewChallengeServer(0, s, scanner).
+			restoredServer, err := server.NewChallengeServer(0, store.NewBuilder()).
 				RestoreFromArchive(buffer).
 				Start()
 			require.NoError(t, err)
