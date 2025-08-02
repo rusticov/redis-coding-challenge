@@ -20,7 +20,16 @@ The following Redis commands are currently implemented:
 * RPUSH
 * LRANGE
 
-## Build and Running Server
+## Running Server
+
+Server runs against the default Redis port 6379 by default.
+
+Syntax is `[--port <port-number>] [--aof]`
+
+* --port <port-number> is the port the server will listen to
+* --aof will read and write requests to an append-only file (redis-aof.log)
+
+## Build
 
 The server currently recognizes no arguments.  It runs against a random port to
 avoid clashing with Redis whilst in development.
