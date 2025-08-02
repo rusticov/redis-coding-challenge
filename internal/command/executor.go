@@ -2,13 +2,15 @@ package command
 
 import (
 	"context"
+	"io"
+	"log/slog"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
 	"time"
 )
 
 type Executor interface {
-	Execute(cmd Command, responses chan<- protocol.Data, errors chan<- error)
+	Execute(request []byte, cmd Command, responses chan<- protocol.Data, errors chan<- error)
 }
 
 type Scanner interface {
@@ -17,19 +19,21 @@ type Scanner interface {
 
 type execution struct {
 	cmd      Command
+	request  []byte
 	scan     Scanner
 	errors   chan<- error
 	response chan<- protocol.Data
+	writer   io.Writer
 }
 
 const callsToStoreQueueSize = 1000
 
-func NewStoreExecutor(ctx context.Context, s store.Store, scanner Scanner) Executor {
+func NewStoreExecutor(ctx context.Context, s store.Store, scanner Scanner, writer io.Writer) Executor {
 	executionChannel := make(chan execution, callsToStoreQueueSize)
 
 	go triggerRepeatedExpiryScan(ctx, executionChannel, scanner)
 
-	go executeCommandsAgainstStore(ctx, executionChannel, s)
+	go executeCommandsAgainstStore(ctx, executionChannel, s, writer)
 
 	return storeExecutor{executionChannel: executionChannel}
 }
@@ -48,7 +52,7 @@ func triggerRepeatedExpiryScan(ctx context.Context, executionChannel chan<- exec
 	}
 }
 
-func executeCommandsAgainstStore(ctx context.Context, executionChannel <-chan execution, s store.Store) {
+func executeCommandsAgainstStore(ctx context.Context, executionChannel <-chan execution, s store.Store, writer io.Writer) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -58,12 +62,18 @@ func executeCommandsAgainstStore(ctx context.Context, executionChannel <-chan ex
 			case e.scan != nil:
 				e.scan.Scan()
 			case e.cmd != nil:
-				data, err := e.cmd.Execute(s)
+				_, err := writer.Write(e.request)
+				if err != nil {
+					slog.Error("failed to write request", "error", err, "request", string(e.request))
+					return
+				}
 
+				data, err := e.cmd.Execute(s)
 				if err != nil {
 					e.errors <- err
 					continue
 				}
+
 				e.response <- data
 			}
 		}
@@ -74,6 +84,6 @@ type storeExecutor struct {
 	executionChannel chan<- execution
 }
 
-func (executor storeExecutor) Execute(cmd Command, responses chan<- protocol.Data, errors chan<- error) {
-	executor.executionChannel <- execution{cmd: cmd, errors: errors, response: responses}
+func (executor storeExecutor) Execute(request []byte, cmd Command, responses chan<- protocol.Data, errors chan<- error) {
+	executor.executionChannel <- execution{cmd: cmd, request: request, errors: errors, response: responses}
 }

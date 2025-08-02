@@ -2,6 +2,7 @@ package tests
 
 import (
 	"github.com/stretchr/testify/require"
+	"io"
 	"net"
 	"redis-challenge/internal/command"
 	"redis-challenge/internal/server"
@@ -36,10 +37,15 @@ func (s ServerVariant) Sleep(clock store.Clock, c call.Call) {
 	time.Sleep(delay)
 }
 
-func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ServerVariant) {
+func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ServerVariant, logWriter ...io.Writer) {
 	clock := &store.FixedClock{TimeInMilliseconds: time.Now().UnixMilli()}
 
-	testServer := createTestServer(t, clock, variant)
+	actualLogWriter := io.Discard
+	if len(logWriter) > 0 {
+		actualLogWriter = logWriter[0]
+	}
+
+	testServer := createTestServer(t, clock, variant, actualLogWriter)
 	defer func() {
 		require.NoError(t, testServer.Close(), "failed to close test server")
 	}()
@@ -81,7 +87,7 @@ func SendCallsToServer[T call.Call](t testing.TB, testServer server.Server, call
 	}
 }
 
-func createTestServer(t testing.TB, clock store.Clock, variant ServerVariant) server.Server {
+func createTestServer(t testing.TB, clock store.Clock, variant ServerVariant, logWriter io.Writer) server.Server {
 	switch variant {
 	case UseRealRedisServer:
 		return NewRealRedisServer()
@@ -90,7 +96,7 @@ func createTestServer(t testing.TB, clock store.Clock, variant ServerVariant) se
 		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 		scanner := command.NewExpiryScanner(tracker, s)
 
-		challengeServer, err := server.NewChallengeServer(0, s, scanner).Start()
+		challengeServer, err := server.NewChallengeServer(0, s, scanner).WithWriter(logWriter).Start()
 		require.NoError(t, err)
 		return challengeServer
 	}

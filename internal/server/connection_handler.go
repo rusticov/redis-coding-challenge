@@ -66,7 +66,7 @@ func (h connectionHandler) executeCommand(protocolData protocol.Data, buffer byt
 		responseReceiver := make(chan protocol.Data)
 		errorReceiver := make(chan error)
 
-		h.executor.Execute(parsedCommand, responseReceiver, errorReceiver)
+		h.executor.Execute(buffer.Bytes(), parsedCommand, responseReceiver, errorReceiver)
 
 		select {
 		case err := <-errorReceiver:

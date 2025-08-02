@@ -1,0 +1,65 @@
+package command_test
+
+import (
+	"bytes"
+	nanoid "github.com/matoous/go-nanoid/v2"
+	"github.com/stretchr/testify/require"
+	"redis-challenge/internal/command"
+	"redis-challenge/internal/protocol"
+	"redis-challenge/internal/server"
+	"redis-challenge/internal/store"
+	"redis-challenge/tests"
+	"redis-challenge/tests/call"
+	"testing"
+)
+
+func TestWritingToArchive(t *testing.T) {
+
+	uniqueSuffix := "-" + nanoid.Must(6)
+
+	testCases := map[string]struct {
+		calls            []call.DataCall
+		postRestoreCalls []call.DataCall
+		driverChoice     tests.ServerVariant
+	}{
+		"getting value that has been set": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-value" + uniqueSuffix),
+						protocol.NewBulkString("value 1"),
+					},
+					protocol.NewSimpleString("OK"),
+				),
+			},
+			postRestoreCalls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("key-with-value" + uniqueSuffix),
+					},
+					protocol.NewBulkString("value 1"),
+				),
+			},
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			buffer := bytes.NewBuffer(nil)
+			tests.DriveProtocolAgainstServer(t, testCase.calls, testCase.driverChoice, buffer)
+
+			tracker := store.NewExpiryTracker()
+			s := store.New().WithExpiryTracker(tracker)
+			scanner := command.NewExpiryScanner(tracker, s)
+
+			restoredServer, err := server.NewChallengeServer(0, s, scanner).
+				RestoreFromArchive(buffer).
+				Start()
+			require.NoError(t, err)
+
+			tests.SendCallsToServer(t, restoredServer, testCase.postRestoreCalls, testCase.driverChoice, store.SystemClock{})
+		})
+	}
+}

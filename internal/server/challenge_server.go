@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 
@@ -41,10 +42,10 @@ func (c *ChallengeServer) Close() error {
 }
 
 type ChallengeServerBuilder struct {
-	port    int
-	store   store.Store
-	scanner command.Scanner
-
+	port           int
+	store          store.Store
+	scanner        command.Scanner
+	writer         io.Writer
 	monitorChannel MonitorChannel
 	err            error
 }
@@ -54,7 +55,13 @@ func NewChallengeServer(port int, s store.Store, scanner command.Scanner) *Chall
 		port:    port,
 		store:   s,
 		scanner: scanner,
+		writer:  io.Discard,
 	}
+}
+
+func (b *ChallengeServerBuilder) WithWriter(writer io.Writer) *ChallengeServerBuilder {
+	b.writer = writer
+	return b
 }
 
 func (b *ChallengeServerBuilder) WithMonitorChannel(monitorChannel MonitorChannel) *ChallengeServerBuilder {
@@ -75,7 +82,7 @@ func (b *ChallengeServerBuilder) Start() (*ChallengeServer, error) {
 	ctx, cancelFunction := context.WithCancel(context.Background())
 
 	handler := connectionHandler{
-		executor: command.NewStoreExecutor(ctx, b.store, b.scanner),
+		executor: command.NewStoreExecutor(ctx, b.store, b.scanner, b.writer),
 	}
 
 	go func() {
@@ -104,4 +111,15 @@ func (b *ChallengeServerBuilder) Start() (*ChallengeServer, error) {
 		socket:         socket,
 		cancelFunction: cancelFunction,
 	}, nil
+}
+
+func (b *ChallengeServerBuilder) RestoreFromArchive(reader io.Reader) *ChallengeServerBuilder {
+	r := restorer{store: b.store}
+
+	err := r.RestoreFromLog(reader)
+	if err != nil {
+		b.err = err
+	}
+
+	return b
 }
