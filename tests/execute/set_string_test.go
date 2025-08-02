@@ -102,7 +102,7 @@ func TestSettingStringValues(t *testing.T) {
 				call.NewFromData(
 					[]protocol.Data{
 						protocol.NewBulkString("SET"),
-						protocol.NewBulkString("key-with-value-nx" + uniqueSuffix),
+						protocol.NewBulkString("key-with-value-get-nx" + uniqueSuffix),
 						protocol.NewBulkString("first value"),
 						protocol.NewBulkString("GET"),
 						protocol.NewBulkString("NX"),
@@ -112,7 +112,7 @@ func TestSettingStringValues(t *testing.T) {
 				call.NewFromData(
 					[]protocol.Data{
 						protocol.NewBulkString("SET"),
-						protocol.NewBulkString("key-with-value-nx" + uniqueSuffix),
+						protocol.NewBulkString("key-with-value-get-nx" + uniqueSuffix),
 						protocol.NewBulkString("second value"),
 						protocol.NewBulkString("GET"),
 						protocol.NewBulkString("NX"),
@@ -122,7 +122,7 @@ func TestSettingStringValues(t *testing.T) {
 				call.NewFromData(
 					[]protocol.Data{
 						protocol.NewBulkString("GET"),
-						protocol.NewBulkString("key-with-value-nx" + uniqueSuffix),
+						protocol.NewBulkString("key-with-value-get-nx" + uniqueSuffix),
 					},
 					protocol.NewBulkString("first value"),
 				),
@@ -181,7 +181,7 @@ func TestSettingStringValues(t *testing.T) {
 				call.NewFromData(
 					[]protocol.Data{
 						protocol.NewBulkString("SET"),
-						protocol.NewBulkString("key-with-value-xx" + uniqueSuffix),
+						protocol.NewBulkString("key-with-value-xx-get" + uniqueSuffix),
 						protocol.NewBulkString("first value"),
 					},
 					protocol.NewSimpleString("OK"),
@@ -189,7 +189,7 @@ func TestSettingStringValues(t *testing.T) {
 				call.NewFromData(
 					[]protocol.Data{
 						protocol.NewBulkString("SET"),
-						protocol.NewBulkString("key-with-value-xx" + uniqueSuffix),
+						protocol.NewBulkString("key-with-value-xx-get" + uniqueSuffix),
 						protocol.NewBulkString("second value"),
 						protocol.NewBulkString("GET"),
 						protocol.NewBulkString("XX"),
@@ -199,7 +199,7 @@ func TestSettingStringValues(t *testing.T) {
 				call.NewFromData(
 					[]protocol.Data{
 						protocol.NewBulkString("GET"),
-						protocol.NewBulkString("key-with-value-xx" + uniqueSuffix),
+						protocol.NewBulkString("key-with-value-xx-get" + uniqueSuffix),
 					},
 					protocol.NewBulkString("second value"),
 				),
