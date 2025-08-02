@@ -23,15 +23,17 @@ const (
 	UseChallengeServer ServerVariant = ""
 )
 
-func (s ServerVariant) Sleep(clock *store.FixedClock, c call.Call) {
+func (s ServerVariant) Sleep(clock store.Clock, c call.Call) {
 	delay := c.Delay()
 
-	switch s {
-	case UseChallengeServer:
-		clock.AddMilliseconds(delay.Milliseconds())
-	default:
-		time.Sleep(delay)
+	if s == UseChallengeServer {
+		if fixedClock, ok := clock.(*store.FixedClock); ok {
+			fixedClock.AddMilliseconds(delay.Milliseconds())
+			return
+		}
 	}
+
+	time.Sleep(delay)
 }
 
 func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ServerVariant) {
@@ -41,6 +43,11 @@ func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant Se
 	defer func() {
 		require.NoError(t, testServer.Close(), "failed to close test server")
 	}()
+
+	SendCallsToServer(t, testServer, calls, variant, clock)
+}
+
+func SendCallsToServer[T call.Call](t testing.TB, testServer server.Server, calls []T, variant ServerVariant, clock store.Clock) {
 
 	connection, err := net.DialTimeout("tcp", testServer.Address(), timeout)
 	require.NoError(t, err)
@@ -52,7 +59,7 @@ func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant Se
 		variant.Sleep(clock, nextCall)
 
 		request := nextCall.Request()
-		_, err = connection.Write([]byte(request))
+		_, err := connection.Write([]byte(request))
 		require.NoError(t, err, "failed to write request: %s", request)
 
 		if !nextCall.IsResponseExpected() {
@@ -74,13 +81,8 @@ func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant Se
 	}
 }
 
-func createTestServer(t testing.TB, clock store.Clock, variant ...ServerVariant) server.Server {
-	activeVariant := UseChallengeServer
-	if len(variant) > 0 {
-		activeVariant = variant[0]
-	}
-
-	switch activeVariant {
+func createTestServer(t testing.TB, clock store.Clock, variant ServerVariant) server.Server {
+	switch variant {
 	case UseRealRedisServer:
 		return NewRealRedisServer()
 	default:
@@ -88,7 +90,7 @@ func createTestServer(t testing.TB, clock store.Clock, variant ...ServerVariant)
 		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 		scanner := command.NewExpiryScanner(tracker, s)
 
-		challengeServer, err := server.NewChallengeServer(0, s, scanner)
+		challengeServer, err := server.NewChallengeServer(0, s, scanner).Start()
 		require.NoError(t, err)
 		return challengeServer
 	}

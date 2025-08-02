@@ -15,16 +15,17 @@ func main() {
 
 	scanner := command.NewExpiryScanner(tracker, dataStore)
 
-	srv, err := server.NewChallengeServer(0, dataStore, scanner)
+	serverMonitor := make(server.MonitorChannel)
+
+	srv, err := server.NewChallengeServer(0, dataStore, scanner).
+		WithMonitorChannel(serverMonitor).
+		Start()
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to create server: %v", err))
 		os.Exit(1)
 	}
 
 	slog.Info("Listening on", "address", srv.Address())
-
-	serverMonitor := make(server.MonitorChannel)
-	srv.AddMonitor(serverMonitor)
 
 	for state := range serverMonitor {
 		if state == server.StatePortClosed {

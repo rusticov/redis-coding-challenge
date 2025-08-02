@@ -6,7 +6,7 @@ import (
 	"redis-challenge/internal/store"
 )
 
-var validators = map[string]validator{
+var validators = map[string]commandValidator{
 	"PING":   PingValidator{},
 	"ECHO":   EchoValidator{},
 	"CONFIG": ConfigValidator{},
@@ -21,8 +21,12 @@ var validators = map[string]validator{
 	"SET":    &SetValidator{clock: store.SystemClock{}},
 }
 
-type validator interface {
+type commandValidator interface {
 	Validate(arguments []protocol.Data) (Command, protocol.Data)
+}
+
+type Validator interface {
+	Validate(data protocol.Data) (Command, protocol.Data)
 }
 
 func Validate(data protocol.Data) (Command, protocol.Data) {
