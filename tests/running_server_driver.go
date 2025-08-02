@@ -4,7 +4,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"io"
 	"net"
-	"redis-challenge/internal/command"
 	"redis-challenge/internal/server"
 	"redis-challenge/internal/store"
 	"redis-challenge/tests/call"
@@ -94,7 +93,7 @@ func createTestServer(t testing.TB, clock store.Clock, variant ServerVariant, lo
 	default:
 		tracker := store.NewExpiryTracker()
 		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
-		scanner := command.NewExpiryScanner(tracker, s)
+		scanner := store.NewExpiryScanner(tracker, s)
 
 		challengeServer, err := server.NewChallengeServer(0, s, scanner).WithWriter(logWriter).Start()
 		require.NoError(t, err)

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	nanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/stretchr/testify/require"
-	"redis-challenge/internal/command"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/server"
 	"redis-challenge/internal/store"
@@ -52,7 +51,7 @@ func TestWritingToArchive(t *testing.T) {
 
 			tracker := store.NewExpiryTracker()
 			s := store.New().WithExpiryTracker(tracker)
-			scanner := command.NewExpiryScanner(tracker, s)
+			scanner := store.NewExpiryScanner(tracker, s)
 
 			restoredServer, err := server.NewChallengeServer(0, s, scanner).
 				RestoreFromArchive(buffer).

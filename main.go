@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"redis-challenge/internal/command"
 	"redis-challenge/internal/server"
 	"redis-challenge/internal/store"
 )
@@ -13,7 +12,7 @@ func main() {
 	tracker := store.NewExpiryTracker()
 	dataStore := store.New().WithExpiryTracker(tracker)
 
-	scanner := command.NewExpiryScanner(tracker, dataStore)
+	scanner := store.NewExpiryScanner(tracker, dataStore)
 
 	serverMonitor := make(server.MonitorChannel)
 

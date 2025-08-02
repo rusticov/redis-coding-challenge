@@ -1,9 +1,8 @@
-package command_test
+package store_test
 
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"redis-challenge/internal/command"
 	"redis-challenge/internal/store"
 	"testing"
 )
@@ -16,7 +15,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 
-		scanner := command.NewExpiryScanner(tracker, s)
+		scanner := store.NewExpiryScanner(tracker, s)
 
 		s.Write("key", "value", store.ExpiryOptionExpirySeconds, 1)
 
@@ -34,7 +33,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 
-		scanner := command.NewExpiryScanner(tracker, s)
+		scanner := store.NewExpiryScanner(tracker, s)
 
 		s.Write("key", "value", store.ExpiryOptionExpirySeconds, 1)
 
@@ -50,7 +49,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 
-		scanner := command.NewExpiryScanner(tracker, s)
+		scanner := store.NewExpiryScanner(tracker, s)
 
 		s.Write("key1", "value", store.ExpiryOptionExpirySeconds, 1)
 		s.Write("key2", "value", store.ExpiryOptionExpirySeconds, 4)
@@ -76,7 +75,7 @@ func TestExpiryScanner(t *testing.T) {
 
 		s := store.NewWithClock(clock).WithExpiryTracker(tracker)
 
-		scanner := command.NewExpiryScanner(tracker, s)
+		scanner := store.NewExpiryScanner(tracker, s)
 
 		for i := range 100 {
 			s.Write(fmt.Sprintf("key%d", i), "value", store.ExpiryOptionExpirySeconds, 1)

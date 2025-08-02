@@ -1,10 +1,8 @@
-package command
-
-import "redis-challenge/internal/store"
+package store
 
 type ExpiryScanner struct {
-	tracker            *store.ExpiryTracker
-	store              store.Store
+	tracker            *ExpiryTracker
+	store              Store
 	randomCount        int
 	continuePurgeCount int
 }
@@ -26,7 +24,7 @@ func (s ExpiryScanner) Scan() {
 	}
 }
 
-func NewExpiryScanner(tracker *store.ExpiryTracker, s store.Store) *ExpiryScanner {
+func NewExpiryScanner(tracker *ExpiryTracker, s Store) *ExpiryScanner {
 	return &ExpiryScanner{
 		tracker:            tracker,
 		store:              s,
