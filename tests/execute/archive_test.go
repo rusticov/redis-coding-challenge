@@ -10,6 +10,7 @@ import (
 	"redis-challenge/tests"
 	"redis-challenge/tests/call"
 	"testing"
+	"time"
 )
 
 func TestWritingToArchive(t *testing.T) {
@@ -39,6 +40,36 @@ func TestWritingToArchive(t *testing.T) {
 						protocol.NewBulkString("key-with-value" + uniqueSuffix),
 					},
 					protocol.NewBulkString("value 1"),
+				),
+			},
+		},
+		"getting expired value that has been set": {
+			calls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("SET"),
+						protocol.NewBulkString("key-with-expired-value" + uniqueSuffix),
+						protocol.NewBulkString("value 1"),
+						protocol.NewBulkString("EX"),
+						protocol.NewBulkString("59"),
+					},
+					protocol.NewSimpleString("OK"),
+				),
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("key-with-expired-value" + uniqueSuffix),
+					},
+					nil,
+				).WithDelay(time.Minute),
+			},
+			postRestoreCalls: []call.DataCall{
+				call.NewFromData(
+					[]protocol.Data{
+						protocol.NewBulkString("GET"),
+						protocol.NewBulkString("key-with-expired-value" + uniqueSuffix),
+					},
+					nil,
 				),
 			},
 		},

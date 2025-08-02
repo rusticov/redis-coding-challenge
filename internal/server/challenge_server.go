@@ -80,7 +80,7 @@ func (b *ChallengeServerBuilder) Start() (*ChallengeServer, error) {
 
 	ctx, cancelFunction := context.WithCancel(context.Background())
 
-	s, scanner := b.builder.Build()
+	s, scanner := b.builder.WithCommandLogWriter(b.writer).Build()
 
 	if b.reader != nil {
 		b.restoreFromArchive(s)

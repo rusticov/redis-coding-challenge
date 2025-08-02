@@ -17,6 +17,8 @@ func (h restorer) RestoreFromLog(reader io.Reader) error {
 	var buffer bytes.Buffer
 
 	readBuffer := make([]byte, 1024)
+
+readMore:
 	for {
 		bytesRead, err := reader.Read(readBuffer)
 		if err != nil {
@@ -28,18 +30,19 @@ func (h restorer) RestoreFromLog(reader io.Reader) error {
 		}
 		buffer.Write(readBuffer[:bytesRead])
 
-		protocolData, requestByteCount := protocol.ReadFrame(buffer.Bytes())
-		if requestByteCount == 0 {
-			continue
-		}
-		err = h.executeCommand(protocolData, buffer)
+		for {
+			protocolData, requestByteCount := protocol.ReadFrame(readBuffer)
+			if requestByteCount == 0 {
+				continue readMore
+			}
 
-		if err != nil {
-			return err
-		}
+			err = h.executeCommand(protocolData, buffer)
+			if err != nil {
+				return err
+			}
 
-		copy(readBuffer, buffer.Bytes()[requestByteCount:])
-		buffer.Reset()
+			copy(readBuffer, readBuffer[requestByteCount:])
+		}
 	}
 }
 

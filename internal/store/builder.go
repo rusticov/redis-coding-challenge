@@ -1,7 +1,10 @@
 package store
 
+import "io"
+
 type Builder struct {
-	clock Clock
+	clock            Clock
+	commandLogWriter io.Writer
 }
 
 func NewBuilder() Builder {
@@ -13,8 +16,13 @@ func (b Builder) WithClock(c Clock) Builder {
 	return b
 }
 
+func (b Builder) WithCommandLogWriter(writer io.Writer) Builder {
+	b.commandLogWriter = writer
+	return b
+}
+
 func (b Builder) Build() (Store, *ExpiryScanner) {
-	tracker := NewExpiryTracker()
+	tracker := NewExpiryTracker().withDeleteListener(&deleteListener{writer: b.commandLogWriter})
 	dataStore := New().WithClock(b.clock).WithExpiryTracker(tracker)
 
 	scanner := NewExpiryScanner(tracker, dataStore)

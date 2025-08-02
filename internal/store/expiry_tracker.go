@@ -1,10 +1,37 @@
 package store
 
-import "math/rand"
+import (
+	"io"
+	"math/rand"
+	"redis-challenge/internal/protocol"
+)
+
+type deleteListener struct {
+	writer io.Writer
+}
+
+func (l *deleteListener) OnDelete(key string) {
+	if l == nil || l.writer == nil {
+		return
+	}
+
+	cmd := protocol.Array{
+		Data: []protocol.Data{
+			protocol.BulkString("DEL"),
+			protocol.BulkString(key),
+		},
+	}
+
+	err := protocol.WriteData(l.writer, cmd)
+	if err != nil {
+		panic(err)
+	}
+}
 
 type ExpiryTracker struct {
-	keys     []string
-	keyIsSet map[string]struct{}
+	keys           []string
+	keyIsSet       map[string]struct{}
+	deleteListener *deleteListener
 }
 
 func (t *ExpiryTracker) SelectKeys(count int) []string {
@@ -51,11 +78,17 @@ func (t *ExpiryTracker) RemoveKey(key string) {
 		delete(t.keyIsSet, key)
 		for i, k := range t.keys {
 			if k == key {
+				t.deleteListener.OnDelete(key)
 				t.keys = append(t.keys[:i], t.keys[i+1:]...)
 				break
 			}
 		}
 	}
+}
+
+func (t *ExpiryTracker) withDeleteListener(listener *deleteListener) *ExpiryTracker {
+	t.deleteListener = listener
+	return t
 }
 
 func NewExpiryTracker() *ExpiryTracker {
