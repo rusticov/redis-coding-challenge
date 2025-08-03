@@ -58,7 +58,7 @@ func NewChallengeServer(port int, builder store.Builder) *ChallengeServerBuilder
 	}
 }
 
-func (b *ChallengeServerBuilder) WithWriter(writer io.Writer) *ChallengeServerBuilder {
+func (b *ChallengeServerBuilder) WithArchiveWriter(writer io.Writer) *ChallengeServerBuilder {
 	b.writer = writer
 	return b
 }

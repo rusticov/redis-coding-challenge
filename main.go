@@ -20,7 +20,7 @@ func main() {
 
 	srv, err := server.NewChallengeServer(configuration.Port, store.NewBuilder()).
 		RestoreFromArchive(configuration.AppendLogReader).
-		WithWriter(configuration.AppendLogWriter).
+		WithArchiveWriter(configuration.AppendLogWriter).
 		WithMonitorChannel(serverMonitor).
 		Start()
 	if err != nil {

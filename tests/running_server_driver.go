@@ -91,7 +91,7 @@ func createTestServer(t testing.TB, clock store.Clock, variant ServerVariant, lo
 	case UseRealRedisServer:
 		return NewRealRedisServer()
 	default:
-		challengeServer, err := server.NewChallengeServer(0, store.NewBuilder().WithClock(clock)).WithWriter(logWriter).Start()
+		challengeServer, err := server.NewChallengeServer(0, store.NewBuilder().WithClock(clock)).WithArchiveWriter(logWriter).Start()
 		require.NoError(t, err)
 		return challengeServer
 	}
