@@ -78,13 +78,18 @@ func (b *ChallengeServerBuilder) Start() (*ChallengeServer, error) {
 		return nil, err
 	}
 
-	ctx, cancelFunction := context.WithCancel(context.Background())
-
 	s, scanner := b.builder.WithCommandLogWriter(b.writer).Build()
 
 	if b.reader != nil {
-		b.restoreFromArchive(s)
+		r := restorer{store: s}
+
+		err = r.RestoreFromLog(b.reader)
+		if err != nil {
+			return nil, fmt.Errorf("failed restore from log: %w", err)
+		}
 	}
+
+	ctx, cancelFunction := context.WithCancel(context.Background())
 
 	handler := connectionHandler{
 		executor: command.NewStoreExecutor(ctx, s, scanner, b.writer),
@@ -120,16 +125,5 @@ func (b *ChallengeServerBuilder) Start() (*ChallengeServer, error) {
 
 func (b *ChallengeServerBuilder) RestoreFromArchive(reader io.Reader) *ChallengeServerBuilder {
 	b.reader = reader
-	return b
-}
-
-func (b *ChallengeServerBuilder) restoreFromArchive(s store.Store) *ChallengeServerBuilder {
-	r := restorer{store: s}
-
-	err := r.RestoreFromLog(b.reader)
-	if err != nil {
-		b.err = err
-	}
-
 	return b
 }
