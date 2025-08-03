@@ -42,9 +42,15 @@ func (h connectionHandler) HandleConnection(connection net.Conn) {
 		}
 		response := h.executeCommand(protocolData, buffer)
 
-		err = protocol.WriteData(connection, response)
+		outBuffer := bytes.NewBuffer(nil)
+		err = protocol.WriteData(outBuffer, response)
 		if err != nil {
-			slog.Error("failed to write parse request error", "error", err, "request", buffer.String())
+			slog.Error("failed to write parse response error", "error", err, "request", buffer.String())
+		}
+
+		_, err = connection.Write(outBuffer.Bytes())
+		if err != nil {
+			slog.Error("failed to send response", "error", err, "request", buffer.String())
 		}
 
 		copy(readBuffer, buffer.Bytes()[requestByteCount:])
