@@ -1,6 +1,8 @@
 package command
 
 import (
+	"bytes"
+	"log/slog"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
 	"strconv"
@@ -30,9 +32,11 @@ func (v *SetValidator) Validate(requestBytes []byte, arguments []protocol.Data) 
 		expiry:       0,
 	}
 
+	var expiryIsRelative bool
+	var expiryOptionIndex int
 	var needTimeValue bool
 
-	for _, arg := range arguments[2:] {
+	for i, arg := range arguments[2:] {
 		if bulkText, ok := arg.(protocol.BulkString); ok {
 			if needTimeValue {
 				expiry, err := strconv.ParseInt(string(bulkText), 10, 64)
@@ -64,12 +68,18 @@ func (v *SetValidator) Validate(requestBytes []byte, arguments []protocol.Data) 
 				}
 				cmd.expiryOption = store.ExpiryOptionExpirySeconds
 				needTimeValue = true
+
+				expiryIsRelative = true
+				expiryOptionIndex = i + 2
 			case "PX":
 				if cmd.expiryOption != store.ExpiryOptionNone {
 					return nil, NewSyntaxError()
 				}
 				cmd.expiryOption = store.ExpiryOptionExpiryMilliseconds
 				needTimeValue = true
+
+				expiryIsRelative = true
+				expiryOptionIndex = i + 2
 			case "EXAT":
 				if cmd.expiryOption != store.ExpiryOptionNone {
 					return nil, NewSyntaxError()
@@ -99,7 +109,32 @@ func (v *SetValidator) Validate(requestBytes []byte, arguments []protocol.Data) 
 		return nil, NewSyntaxError()
 	}
 
+	if expiryIsRelative {
+		if updatedRequestBytes, ok := v.requestBytesWithUpdatedExpiry(arguments, expiryOptionIndex, cmd.expiry); ok {
+			cmd.requestBytes = updatedRequestBytes
+		}
+	}
+
 	return cmd, nil
+}
+
+func (v *SetValidator) requestBytesWithUpdatedExpiry(arguments []protocol.Data, expiryOptionIndex int, expiry int64) ([]byte, bool) {
+	newArguments := make([]protocol.Data, len(arguments)+1)
+	copy(newArguments[1:], arguments)
+
+	newArguments[0] = protocol.NewBulkString("SET")
+	newArguments[expiryOptionIndex+1] = protocol.NewBulkString("PXAT")
+	newArguments[expiryOptionIndex+2] = protocol.NewBulkString(strconv.FormatInt(expiry, 10))
+
+	buffer := bytes.NewBuffer(nil)
+	err := protocol.WriteData(buffer, protocol.Array{Data: newArguments})
+
+	if err != nil {
+		slog.Error("cannot convert the request to convert expiry", "error", err)
+		return nil, false
+	} else {
+		return buffer.Bytes(), true
+	}
 }
 
 type existenceOption string

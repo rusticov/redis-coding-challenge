@@ -36,15 +36,21 @@ func (s ServerVariant) Sleep(clock store.Clock, c call.Call) {
 	time.Sleep(delay)
 }
 
-func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ServerVariant, logWriter ...io.Writer) {
-	clock := &store.FixedClock{TimeInMilliseconds: time.Now().UnixMilli()}
+func DriveProtocolAgainstServer[T call.Call](t testing.TB, calls []T, variant ServerVariant, options ...any) {
+	var clock store.Clock = &store.FixedClock{TimeInMilliseconds: time.Now().UnixMilli()}
+	logWriter := io.Discard
 
-	actualLogWriter := io.Discard
-	if len(logWriter) > 0 {
-		actualLogWriter = logWriter[0]
+	for _, option := range options {
+		if definedClock, ok := option.(io.Writer); ok {
+			logWriter = definedClock
+		}
+
+		if definedClock, ok := option.(store.Clock); ok {
+			clock = definedClock
+		}
 	}
 
-	testServer := createTestServer(t, clock, variant, actualLogWriter)
+	testServer := createTestServer(t, clock, variant, logWriter)
 	defer func() {
 		require.NoError(t, testServer.Close(), "failed to close test server")
 	}()

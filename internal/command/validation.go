@@ -6,21 +6,6 @@ import (
 	"redis-challenge/internal/store"
 )
 
-var validators = map[string]commandValidator{
-	"PING":   PingValidator{},
-	"ECHO":   EchoValidator{},
-	"CONFIG": ConfigValidator{},
-	"DECR":   DecrValidator{},
-	"DEL":    DelValidator{},
-	"EXISTS": ExistsValidator{},
-	"INCR":   IncrValidator{},
-	"GET":    GetValidator{},
-	"LPUSH":  LPushValidator{},
-	"LRANGE": LRangeValidator{},
-	"RPUSH":  RPushValidator{},
-	"SET":    &SetValidator{clock: store.SystemClock{}},
-}
-
 type commandValidator interface {
 	Validate(requestBytes []byte, arguments []protocol.Data) (Command, protocol.Data)
 }
@@ -60,8 +45,8 @@ func (v *validator) Validate(requestBytes []byte, data protocol.Data) (Command, 
 		return nil, errorData
 	}
 
-	if v, ok := validators[commandData.Name]; ok {
-		return v.Validate(requestBytes, commandData.Arguments)
+	if selectedValidator, ok := v.validators[commandData.Name]; ok {
+		return selectedValidator.Validate(requestBytes, commandData.Arguments)
 	}
 
 	return nil, protocol.NewSimpleError(fmt.Sprintf("ERR unknown command '%s'", commandData.Name))
