@@ -59,7 +59,7 @@ readMore:
 }
 
 func (h restorer) executeCommand(protocolData protocol.Data, requestBytes []byte) error {
-	parsedCommand, commandError := h.validator.Validate(protocolData)
+	parsedCommand, commandError := h.validator.Validate(requestBytes, protocolData)
 
 	switch {
 	case commandError != nil:

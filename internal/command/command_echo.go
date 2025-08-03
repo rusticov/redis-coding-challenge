@@ -7,22 +7,26 @@ import (
 
 type EchoValidator struct{}
 
-func (EchoValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
+func (EchoValidator) Validate(requestBytes []byte, arguments []protocol.Data) (Command, protocol.Data) {
 	if len(arguments) != 1 {
 		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'echo' command")
 	}
 	if _, ok := arguments[0].(protocol.BulkString); !ok {
 		return nil, NewWrongDataTypeError(arguments[0], protocol.BulkStringSymbol)
 	}
-	return EchoCommand{response: arguments[0]}, nil
+	return EchoCommand{
+		requestBytes: requestBytes,
+		response:     arguments[0],
+	}, nil
 }
 
 type EchoCommand struct {
-	response protocol.Data
+	requestBytes []byte
+	response     protocol.Data
 }
 
-func (cmd EchoCommand) IsUpdate() bool {
-	return false
+func (cmd EchoCommand) Request() ([]byte, Type) {
+	return cmd.requestBytes, TypeRead
 }
 
 func (cmd EchoCommand) Execute(_ store.Store) (protocol.Data, error) {

@@ -7,12 +7,13 @@ import (
 )
 
 type ChangeIntegerCommand struct {
-	key    string
-	change int64
+	requestBytes []byte
+	key          string
+	change       int64
 }
 
-func (cmd ChangeIntegerCommand) IsUpdate() bool {
-	return true
+func (cmd ChangeIntegerCommand) Request() ([]byte, Type) {
+	return cmd.requestBytes, TypeUpdate
 }
 
 func (cmd ChangeIntegerCommand) Execute(s store.Store) (protocol.Data, error) {

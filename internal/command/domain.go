@@ -5,8 +5,15 @@ import (
 	"redis-challenge/internal/store"
 )
 
+type Type string
+
+const (
+	TypeRead   Type = "read"
+	TypeUpdate Type = "update"
+)
+
 type Command interface {
-	IsUpdate() bool
+	Request() ([]byte, Type)
 	Execute(s store.Store) (protocol.Data, error)
 }
 

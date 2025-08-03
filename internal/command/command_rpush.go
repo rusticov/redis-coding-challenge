@@ -8,7 +8,7 @@ import (
 
 type RPushValidator struct{}
 
-func (RPushValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
+func (RPushValidator) Validate(requestBytes []byte, arguments []protocol.Data) (Command, protocol.Data) {
 	values := make([]string, len(arguments))
 	for i, arg := range arguments {
 		if _, ok := arguments[i].(protocol.BulkString); ok {
@@ -24,18 +24,20 @@ func (RPushValidator) Validate(arguments []protocol.Data) (Command, protocol.Dat
 	}
 
 	return RPushCommand{
-		key:    values[0],
-		values: values[1:],
+		requestBytes: requestBytes,
+		key:          values[0],
+		values:       values[1:],
 	}, nil
 }
 
 type RPushCommand struct {
-	key    string
-	values []string
+	requestBytes []byte
+	key          string
+	values       []string
 }
 
-func (cmd RPushCommand) IsUpdate() bool {
-	return true
+func (cmd RPushCommand) Request() ([]byte, Type) {
+	return cmd.requestBytes, TypeUpdate
 }
 
 func (cmd RPushCommand) Execute(s store.Store) (protocol.Data, error) {

@@ -8,7 +8,7 @@ import (
 
 type GetValidator struct{}
 
-func (GetValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
+func (GetValidator) Validate(requestBytes []byte, arguments []protocol.Data) (Command, protocol.Data) {
 	if len(arguments) != 1 {
 		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'get' command")
 	}
@@ -16,16 +16,18 @@ func (GetValidator) Validate(arguments []protocol.Data) (Command, protocol.Data)
 		return nil, NewWrongDataTypeError(arguments[0], protocol.BulkStringSymbol)
 	}
 	return GetCommand{
-		key: string(arguments[0].(protocol.BulkString)),
+		requestBytes: requestBytes,
+		key:          string(arguments[0].(protocol.BulkString)),
 	}, nil
 }
 
 type GetCommand struct {
-	key string
+	requestBytes []byte
+	key          string
 }
 
-func (cmd GetCommand) IsUpdate() bool {
-	return false
+func (cmd GetCommand) Request() ([]byte, Type) {
+	return cmd.requestBytes, TypeRead
 }
 
 func (cmd GetCommand) Execute(s store.Store) (protocol.Data, error) {

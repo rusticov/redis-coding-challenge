@@ -61,7 +61,7 @@ func (h connectionHandler) HandleConnection(connection net.Conn) {
 }
 
 func (h connectionHandler) executeCommand(protocolData protocol.Data, requestBytes []byte) protocol.Data {
-	parsedCommand, commandError := h.validator.Validate(protocolData)
+	parsedCommand, commandError := h.validator.Validate(requestBytes, protocolData)
 
 	switch {
 	case commandError != nil:
@@ -74,7 +74,7 @@ func (h connectionHandler) executeCommand(protocolData protocol.Data, requestByt
 		responseReceiver := make(chan protocol.Data)
 		errorReceiver := make(chan error)
 
-		h.executor.Execute(requestBytes, parsedCommand, responseReceiver, errorReceiver)
+		h.executor.Execute(parsedCommand, responseReceiver, errorReceiver)
 
 		select {
 		case err := <-errorReceiver:

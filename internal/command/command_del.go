@@ -7,7 +7,7 @@ import (
 
 type DelValidator struct{}
 
-func (DelValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
+func (DelValidator) Validate(requestBytes []byte, arguments []protocol.Data) (Command, protocol.Data) {
 	if len(arguments) == 0 {
 		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'del' command")
 	}
@@ -22,15 +22,16 @@ func (DelValidator) Validate(arguments []protocol.Data) (Command, protocol.Data)
 		return nil, NewWrongDataTypeError(arguments[i], protocol.BulkStringSymbol)
 	}
 
-	return DelCommand{keys: keys}, nil
+	return DelCommand{requestBytes: requestBytes, keys: keys}, nil
 }
 
 type DelCommand struct {
-	keys []string
+	requestBytes []byte
+	keys         []string
 }
 
-func (cmd DelCommand) IsUpdate() bool {
-	return true
+func (cmd DelCommand) Request() ([]byte, Type) {
+	return cmd.requestBytes, TypeUpdate
 }
 
 func (cmd DelCommand) Execute(s store.Store) (protocol.Data, error) {

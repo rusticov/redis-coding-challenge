@@ -29,7 +29,7 @@ func validateAgainstCommandValidator(t testing.TB, calls []call.DataCall) {
 	validator := command.NewValidator(store.SystemClock{})
 
 	for _, c := range calls {
-		_, errorData := validator.Validate(c.RequestData())
+		_, errorData := validator.Validate([]byte(c.Request()), c.RequestData())
 
 		c.ConfirmValidation(t, errorData)
 	}

@@ -10,7 +10,7 @@ type SetValidator struct {
 	clock store.Clock
 }
 
-func (v *SetValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
+func (v *SetValidator) Validate(requestBytes []byte, arguments []protocol.Data) (Command, protocol.Data) {
 	if len(arguments) > 0 && arguments[0].Symbol() != protocol.BulkStringSymbol {
 		return nil, NewWrongDataTypeError(arguments[0], protocol.BulkStringSymbol)
 	}
@@ -23,6 +23,7 @@ func (v *SetValidator) Validate(arguments []protocol.Data) (Command, protocol.Da
 	}
 
 	cmd := SetCommand{
+		requestBytes: requestBytes,
 		key:          string(arguments[0].(protocol.BulkString)),
 		value:        string(arguments[1].(protocol.BulkString)),
 		expiryOption: store.ExpiryOptionNone,
@@ -110,6 +111,7 @@ const (
 )
 
 type SetCommand struct {
+	requestBytes    []byte
 	key             string
 	value           string
 	get             bool
@@ -118,8 +120,8 @@ type SetCommand struct {
 	expiry          int64
 }
 
-func (cmd SetCommand) IsUpdate() bool {
-	return true
+func (cmd SetCommand) Request() ([]byte, Type) {
+	return cmd.requestBytes, TypeUpdate
 }
 
 func (cmd SetCommand) Execute(s store.Store) (protocol.Data, error) {

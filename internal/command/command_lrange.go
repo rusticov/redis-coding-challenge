@@ -9,8 +9,8 @@ import (
 
 type LRangeValidator struct{}
 
-func (LRangeValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
-	var cmd LRangeCommand
+func (LRangeValidator) Validate(requestBytes []byte, arguments []protocol.Data) (Command, protocol.Data) {
+	cmd := LRangeCommand{requestBytes: requestBytes}
 
 	if len(arguments) > 0 {
 		if arg, ok := arguments[0].(protocol.BulkString); ok {
@@ -56,13 +56,14 @@ func parseIntegerFromData(data protocol.Data) (int, protocol.Data) {
 }
 
 type LRangeCommand struct {
-	key   string
-	left  int
-	right int
+	requestBytes []byte
+	key          string
+	left         int
+	right        int
 }
 
-func (cmd LRangeCommand) IsUpdate() bool {
-	return false
+func (cmd LRangeCommand) Request() ([]byte, Type) {
+	return cmd.requestBytes, TypeRead
 }
 
 func (cmd LRangeCommand) Execute(s store.Store) (protocol.Data, error) {

@@ -6,7 +6,7 @@ import (
 
 type IncrValidator struct{}
 
-func (IncrValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
+func (IncrValidator) Validate(requestBytes []byte, arguments []protocol.Data) (Command, protocol.Data) {
 	var key string
 
 	if len(arguments) > 0 {
@@ -28,5 +28,9 @@ func (IncrValidator) Validate(arguments []protocol.Data) (Command, protocol.Data
 		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'incr' command")
 	}
 
-	return ChangeIntegerCommand{key: key, change: 1}, nil
+	return ChangeIntegerCommand{
+		requestBytes: requestBytes,
+		key:          key,
+		change:       1,
+	}, nil
 }

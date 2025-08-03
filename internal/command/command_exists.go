@@ -7,7 +7,7 @@ import (
 
 type ExistsValidator struct{}
 
-func (ExistsValidator) Validate(arguments []protocol.Data) (Command, protocol.Data) {
+func (ExistsValidator) Validate(requestBytes []byte, arguments []protocol.Data) (Command, protocol.Data) {
 	if len(arguments) == 0 {
 		return nil, protocol.NewSimpleError("ERR wrong number of arguments for 'exists' command")
 	}
@@ -22,15 +22,19 @@ func (ExistsValidator) Validate(arguments []protocol.Data) (Command, protocol.Da
 		return nil, NewWrongDataTypeError(arguments[i], protocol.BulkStringSymbol)
 	}
 
-	return ExistsCommand{keys: keys}, nil
+	return ExistsCommand{
+		requestBytes: requestBytes,
+		keys:         keys,
+	}, nil
 }
 
 type ExistsCommand struct {
-	keys []string
+	requestBytes []byte
+	keys         []string
 }
 
-func (cmd ExistsCommand) IsUpdate() bool {
-	return false
+func (cmd ExistsCommand) Request() ([]byte, Type) {
+	return cmd.requestBytes, TypeRead
 }
 
 func (cmd ExistsCommand) Execute(s store.Store) (protocol.Data, error) {

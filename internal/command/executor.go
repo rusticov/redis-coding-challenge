@@ -10,7 +10,7 @@ import (
 )
 
 type Executor interface {
-	Execute(request []byte, cmd Command, responses chan<- protocol.Data, errors chan<- error)
+	Execute(cmd Command, responses chan<- protocol.Data, errors chan<- error)
 }
 
 type Scanner interface {
@@ -62,10 +62,10 @@ func executeCommandsAgainstStore(ctx context.Context, executionChannel <-chan ex
 			case e.scan != nil:
 				e.scan.Scan()
 			case e.cmd != nil:
-				if e.cmd.IsUpdate() {
-					_, err := writer.Write(e.request)
+				if request, commandType := e.cmd.Request(); commandType == TypeUpdate {
+					_, err := writer.Write(request)
 					if err != nil {
-						slog.Error("failed to write request", "error", err, "request", string(e.request))
+						slog.Error("failed to write request", "error", err, "request", string(request))
 						return
 					}
 				}
@@ -86,6 +86,6 @@ type storeExecutor struct {
 	executionChannel chan<- execution
 }
 
-func (executor storeExecutor) Execute(request []byte, cmd Command, responses chan<- protocol.Data, errors chan<- error) {
-	executor.executionChannel <- execution{cmd: cmd, request: request, errors: errors, response: responses}
+func (executor storeExecutor) Execute(cmd Command, responses chan<- protocol.Data, errors chan<- error) {
+	executor.executionChannel <- execution{cmd: cmd, errors: errors, response: responses}
 }

@@ -22,11 +22,11 @@ var validators = map[string]commandValidator{
 }
 
 type commandValidator interface {
-	Validate(arguments []protocol.Data) (Command, protocol.Data)
+	Validate(requestBytes []byte, arguments []protocol.Data) (Command, protocol.Data)
 }
 
 type Validator interface {
-	Validate(data protocol.Data) (Command, protocol.Data)
+	Validate(requestBytes []byte, data protocol.Data) (Command, protocol.Data)
 }
 
 type validator struct {
@@ -54,14 +54,14 @@ func NewValidator(clock store.Clock) Validator {
 	}
 }
 
-func (v *validator) Validate(data protocol.Data) (Command, protocol.Data) {
+func (v *validator) Validate(requestBytes []byte, data protocol.Data) (Command, protocol.Data) {
 	commandData, errorData := FromData(data)
 	if errorData != nil {
 		return nil, errorData
 	}
 
 	if v, ok := validators[commandData.Name]; ok {
-		return v.Validate(commandData.Arguments)
+		return v.Validate(requestBytes, commandData.Arguments)
 	}
 
 	return nil, protocol.NewSimpleError(fmt.Sprintf("ERR unknown command '%s'", commandData.Name))
