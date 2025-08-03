@@ -41,17 +41,18 @@ func (h connectionHandler) HandleConnection(connection net.Conn) {
 		if requestByteCount == 0 {
 			continue
 		}
-		response := h.executeCommand(protocolData, buffer)
+		requestBytes := buffer.Bytes()[:requestByteCount]
+		response := h.executeCommand(protocolData, requestBytes)
 
 		outBuffer := bytes.NewBuffer(nil)
 		err = protocol.WriteData(outBuffer, response)
 		if err != nil {
-			slog.Error("failed to write parse response error", "error", err, "request", buffer.String())
+			slog.Error("failed to write parse response error", "error", err, "request", string(requestBytes))
 		}
 
 		_, err = connection.Write(outBuffer.Bytes())
 		if err != nil {
-			slog.Error("failed to send response", "error", err, "request", buffer.String())
+			slog.Error("failed to send response", "error", err, "request", string(requestBytes))
 		}
 
 		copy(readBuffer, buffer.Bytes()[requestByteCount:])
@@ -59,25 +60,25 @@ func (h connectionHandler) HandleConnection(connection net.Conn) {
 	}
 }
 
-func (h connectionHandler) executeCommand(protocolData protocol.Data, buffer bytes.Buffer) protocol.Data {
+func (h connectionHandler) executeCommand(protocolData protocol.Data, requestBytes []byte) protocol.Data {
 	parsedCommand, commandError := h.validator.Validate(protocolData)
 
 	switch {
 	case commandError != nil:
-		slog.Error("failed to parse request", "error", commandError, "request", buffer.String())
+		slog.Error("failed to parse request", "error", commandError, "request", string(requestBytes))
 		return commandError
 	case parsedCommand == nil:
-		slog.Error("expect a command if there is no error data on parsing", "error", commandError, "request", buffer.String())
+		slog.Error("expect a command if there is no error data on parsing", "error", commandError, "request", string(requestBytes))
 		return protocol.NewSimpleError("ERR protocol error")
 	default:
 		responseReceiver := make(chan protocol.Data)
 		errorReceiver := make(chan error)
 
-		h.executor.Execute(buffer.Bytes(), parsedCommand, responseReceiver, errorReceiver)
+		h.executor.Execute(requestBytes, parsedCommand, responseReceiver, errorReceiver)
 
 		select {
 		case err := <-errorReceiver:
-			slog.Error("failed to execute request", "error", err, "request", buffer.String())
+			slog.Error("failed to execute request", "error", err, "request", string(requestBytes))
 			return protocol.NewSimpleError("ERR protocol error")
 
 		case response := <-responseReceiver:
