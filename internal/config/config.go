@@ -20,13 +20,14 @@ func LoadConfiguration() (Configuration, error) {
 		AppendLogReader: bytes.NewReader(nil),
 		AppendLogWriter: io.Discard,
 	}
+	useAppendOnlyFile := false
 
 	flag.IntVar(&configuration.Port, "port", 6379, "port to listen on")
-	useAppendOnlyFile := flag.Bool("aof", false, "use append only file")
+	flag.BoolVar(&useAppendOnlyFile, "aof", false, "use append only file")
 
 	flag.Parse()
 
-	if *useAppendOnlyFile {
+	if useAppendOnlyFile {
 		var err error
 
 		configuration.AppendLogWriter, err = os.OpenFile("redis-aof.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
