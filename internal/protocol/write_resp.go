@@ -20,15 +20,7 @@ func WriteData(out io.Writer, data Data) error {
 	case BulkString:
 		return writeBulkString(out, d)
 	case Array:
-		if err := writeNumber(out, ArraySymbol, int64(len(d.Data))); err != nil {
-			return err
-		}
-		for _, item := range d.Data {
-			if err := WriteData(out, item); err != nil {
-				return err
-			}
-		}
-		return nil
+		return writeArray(out, d)
 	default:
 		text = fmt.Sprintf("-ERR unknown data type\r\n")
 	}
@@ -67,5 +59,19 @@ func writeBulkString(out io.Writer, data BulkString) error {
 	if _, err := out.Write([]byte("\r\n")); err != nil {
 		return err
 	}
+	return nil
+}
+
+func writeArray(out io.Writer, d Array) error {
+	if err := writeNumber(out, ArraySymbol, int64(len(d.Data))); err != nil {
+		return err
+	}
+
+	for _, item := range d.Data {
+		if err := WriteData(out, item); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
