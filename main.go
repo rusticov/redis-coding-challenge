@@ -19,9 +19,9 @@ func main() {
 	serverMonitor := make(server.MonitorChannel)
 
 	srv, err := server.NewChallengeServer(configuration.Port, store.NewBuilder()).
+		RestoreFromArchive(configuration.AppendLogReader).
 		WithWriter(configuration.AppendLogWriter).
 		WithMonitorChannel(serverMonitor).
-		RestoreFromArchive(configuration.AppendLogReader).
 		Start()
 	if err != nil {
 		slog.Error(fmt.Sprintf("Failed to create server: %v", err))
