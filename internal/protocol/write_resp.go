@@ -3,6 +3,7 @@ package protocol
 import (
 	"fmt"
 	"io"
+	"strconv"
 )
 
 func WriteData(out io.Writer, data Data) error {
@@ -17,7 +18,7 @@ func WriteData(out io.Writer, data Data) error {
 	case SimpleInteger:
 		text = fmt.Sprintf(":%d\r\n", d)
 	case BulkString:
-		text = fmt.Sprintf("$%d\r\n%s\r\n", len(d), d)
+		return writeBulkString(out, d)
 	case Array:
 		text = fmt.Sprintf("*%d\r\n", len(d.Data))
 		_, err := out.Write([]byte(text))
@@ -36,4 +37,26 @@ func WriteData(out io.Writer, data Data) error {
 
 	_, err := out.Write([]byte(text))
 	return err
+}
+
+func writeBulkString(out io.Writer, data BulkString) error {
+	if _, err := out.Write([]byte("$")); err != nil {
+		return err
+	}
+
+	textLength := strconv.Itoa(len(data))
+	if _, err := out.Write([]byte(textLength)); err != nil {
+		return err
+	}
+	if _, err := out.Write([]byte("\r\n")); err != nil {
+		return err
+	}
+
+	if _, err := out.Write([]byte(data)); err != nil {
+		return err
+	}
+	if _, err := out.Write([]byte("\r\n")); err != nil {
+		return err
+	}
+	return nil
 }
