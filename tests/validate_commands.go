@@ -2,6 +2,7 @@ package tests
 
 import (
 	"redis-challenge/internal/command"
+	"redis-challenge/internal/store"
 	"redis-challenge/tests/call"
 	"testing"
 )
@@ -25,8 +26,10 @@ func ValidateCommands(t testing.TB, calls []call.DataCall, driverChoice SelectTe
 }
 
 func validateAgainstCommandValidator(t testing.TB, calls []call.DataCall) {
+	validator := command.NewValidator(store.SystemClock{})
+
 	for _, c := range calls {
-		_, errorData := command.Validate(c.RequestData())
+		_, errorData := validator.Validate(c.RequestData())
 
 		c.ConfirmValidation(t, errorData)
 	}

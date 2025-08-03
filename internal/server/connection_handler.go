@@ -10,7 +10,8 @@ import (
 )
 
 type connectionHandler struct {
-	executor command.Executor
+	executor  command.Executor
+	validator command.Validator
 }
 
 func (h connectionHandler) HandleConnection(connection net.Conn) {
@@ -59,7 +60,7 @@ func (h connectionHandler) HandleConnection(connection net.Conn) {
 }
 
 func (h connectionHandler) executeCommand(protocolData protocol.Data, buffer bytes.Buffer) protocol.Data {
-	parsedCommand, commandError := command.Validate(protocolData)
+	parsedCommand, commandError := h.validator.Validate(protocolData)
 
 	switch {
 	case commandError != nil:

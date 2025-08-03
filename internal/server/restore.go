@@ -11,7 +11,8 @@ import (
 )
 
 type restorer struct {
-	store store.Store
+	store     store.Store
+	validator command.Validator
 }
 
 func (h restorer) RestoreFromLog(reader io.Reader) error {
@@ -58,7 +59,7 @@ readMore:
 }
 
 func (h restorer) executeCommand(protocolData protocol.Data, requestBytes []byte) error {
-	parsedCommand, commandError := command.Validate(protocolData)
+	parsedCommand, commandError := h.validator.Validate(protocolData)
 
 	switch {
 	case commandError != nil:

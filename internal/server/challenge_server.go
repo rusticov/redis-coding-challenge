@@ -48,6 +48,7 @@ type ChallengeServerBuilder struct {
 	reader         io.Reader
 	monitorChannel MonitorChannel
 	err            error
+	clock          store.Clock
 }
 
 func NewChallengeServer(port int, builder store.Builder) *ChallengeServerBuilder {
@@ -56,6 +57,12 @@ func NewChallengeServer(port int, builder store.Builder) *ChallengeServerBuilder
 		builder: builder,
 		writer:  io.Discard,
 	}
+}
+
+func (b *ChallengeServerBuilder) WithClock(clock store.Clock) *ChallengeServerBuilder {
+	b.builder = b.builder.WithClock(clock)
+	b.clock = clock
+	return b
 }
 
 func (b *ChallengeServerBuilder) WithArchiveWriter(writer io.Writer) *ChallengeServerBuilder {
@@ -80,8 +87,13 @@ func (b *ChallengeServerBuilder) Start() (*ChallengeServer, error) {
 
 	s, scanner := b.builder.WithCommandLogWriter(b.writer).Build()
 
+	validator := command.NewValidator(b.clock)
+
 	if b.reader != nil {
-		r := restorer{store: s}
+		r := restorer{
+			store:     s,
+			validator: validator,
+		}
 
 		err = r.RestoreFromLog(b.reader)
 		if err != nil {
@@ -92,7 +104,8 @@ func (b *ChallengeServerBuilder) Start() (*ChallengeServer, error) {
 	ctx, cancelFunction := context.WithCancel(context.Background())
 
 	handler := connectionHandler{
-		executor: command.NewStoreExecutor(ctx, s, scanner, b.writer),
+		executor:  command.NewStoreExecutor(ctx, s, scanner, b.writer),
+		validator: validator,
 	}
 
 	go func() {
