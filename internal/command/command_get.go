@@ -24,6 +24,10 @@ type GetCommand struct {
 	key string
 }
 
+func (cmd GetCommand) IsUpdate() bool {
+	return false
+}
+
 func (cmd GetCommand) Execute(s store.Store) (protocol.Data, error) {
 	value, err := s.ReadString(cmd.key)
 

@@ -61,6 +61,10 @@ type LRangeCommand struct {
 	right int
 }
 
+func (cmd LRangeCommand) IsUpdate() bool {
+	return false
+}
+
 func (cmd LRangeCommand) Execute(s store.Store) (protocol.Data, error) {
 	listRange, err := s.ReadListRange(cmd.key, cmd.left, cmd.right)
 

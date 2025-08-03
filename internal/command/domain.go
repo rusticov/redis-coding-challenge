@@ -6,6 +6,7 @@ import (
 )
 
 type Command interface {
+	IsUpdate() bool
 	Execute(s store.Store) (protocol.Data, error)
 }
 

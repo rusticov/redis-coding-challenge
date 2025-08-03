@@ -34,6 +34,10 @@ type LPushCommand struct {
 	values []string
 }
 
+func (cmd LPushCommand) IsUpdate() bool {
+	return true
+}
+
 func (cmd LPushCommand) Execute(s store.Store) (protocol.Data, error) {
 	count, err := s.LeftPush(cmd.key, cmd.values)
 

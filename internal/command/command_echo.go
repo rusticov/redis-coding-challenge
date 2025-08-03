@@ -21,6 +21,10 @@ type EchoCommand struct {
 	response protocol.Data
 }
 
+func (cmd EchoCommand) IsUpdate() bool {
+	return false
+}
+
 func (cmd EchoCommand) Execute(_ store.Store) (protocol.Data, error) {
 	return cmd.response, nil
 }

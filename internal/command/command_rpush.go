@@ -34,6 +34,10 @@ type RPushCommand struct {
 	values []string
 }
 
+func (cmd RPushCommand) IsUpdate() bool {
+	return true
+}
+
 func (cmd RPushCommand) Execute(s store.Store) (protocol.Data, error) {
 	count, err := s.RightPush(cmd.key, cmd.values)
 

@@ -62,10 +62,12 @@ func executeCommandsAgainstStore(ctx context.Context, executionChannel <-chan ex
 			case e.scan != nil:
 				e.scan.Scan()
 			case e.cmd != nil:
-				_, err := writer.Write(e.request)
-				if err != nil {
-					slog.Error("failed to write request", "error", err, "request", string(e.request))
-					return
+				if e.cmd.IsUpdate() {
+					_, err := writer.Write(e.request)
+					if err != nil {
+						slog.Error("failed to write request", "error", err, "request", string(e.request))
+						return
+					}
 				}
 
 				data, err := e.cmd.Execute(s)

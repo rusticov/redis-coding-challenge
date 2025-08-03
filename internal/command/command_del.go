@@ -29,6 +29,10 @@ type DelCommand struct {
 	keys []string
 }
 
+func (cmd DelCommand) IsUpdate() bool {
+	return true
+}
+
 func (cmd DelCommand) Execute(s store.Store) (protocol.Data, error) {
 	count := 0
 	for _, key := range cmd.keys {

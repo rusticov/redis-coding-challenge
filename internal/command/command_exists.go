@@ -29,6 +29,10 @@ type ExistsCommand struct {
 	keys []string
 }
 
+func (cmd ExistsCommand) IsUpdate() bool {
+	return false
+}
+
 func (cmd ExistsCommand) Execute(s store.Store) (protocol.Data, error) {
 	count := 0
 	for _, key := range cmd.keys {

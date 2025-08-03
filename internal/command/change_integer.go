@@ -11,6 +11,10 @@ type ChangeIntegerCommand struct {
 	change int64
 }
 
+func (cmd ChangeIntegerCommand) IsUpdate() bool {
+	return true
+}
+
 func (cmd ChangeIntegerCommand) Execute(s store.Store) (protocol.Data, error) {
 	value, err := s.Increment(cmd.key, cmd.change)
 	if errors.Is(err, store.ErrorWrongOperationType) {

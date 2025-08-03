@@ -118,6 +118,10 @@ type SetCommand struct {
 	expiry          int64
 }
 
+func (cmd SetCommand) IsUpdate() bool {
+	return true
+}
+
 func (cmd SetCommand) Execute(s store.Store) (protocol.Data, error) {
 	exists := s.Exists(cmd.key)
 	var oldValue protocol.Data

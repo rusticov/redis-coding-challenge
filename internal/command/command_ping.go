@@ -25,6 +25,10 @@ type PingCommand struct {
 	response protocol.Data
 }
 
+func (cmd PingCommand) IsUpdate() bool {
+	return false
+}
+
 func (cmd PingCommand) Execute(_ store.Store) (protocol.Data, error) {
 	return cmd.response, nil
 }
