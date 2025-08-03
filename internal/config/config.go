@@ -30,7 +30,7 @@ func LoadConfiguration() (Configuration, error) {
 	if useAppendOnlyFile {
 		var err error
 
-		configuration.AppendLogWriter, err = os.OpenFile("redis-aof.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		configuration.AppendLogWriter, err = os.OpenFile("redis-aof.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 		if err != nil {
 			return Configuration{}, fmt.Errorf("failed to open append only file for writing: %w", err)
 		}
