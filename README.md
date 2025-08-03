@@ -20,6 +20,8 @@ The following Redis commands are currently implemented:
 * RPUSH
 * LRANGE
 
+There is also a default (uninformative) implementation of CONFIG.
+
 ## Running Server
 
 Server runs against the default Redis port 6379 by default.
@@ -28,6 +30,9 @@ Syntax is `[--port <port-number>] [--aof]`
 
 * --port <port-number> is the port the server will listen to
 * --aof will read and write requests to an append-only file (redis-aof.log)
+
+The append-only log is a list of all commands executed successfully.
+It is only used if the `--aof` flag is specified.
 
 ## Build
 
