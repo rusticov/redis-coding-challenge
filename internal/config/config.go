@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log/slog"
 	"os"
 )
 
@@ -15,7 +14,7 @@ type Configuration struct {
 	AppendLogWriter io.Writer
 }
 
-func LoadConfiguration() Configuration {
+func LoadConfiguration() (Configuration, error) {
 	configuration := Configuration{
 		Port:            6379,
 		AppendLogReader: bytes.NewReader(nil),
@@ -32,15 +31,14 @@ func LoadConfiguration() Configuration {
 
 		configuration.AppendLogWriter, err = os.OpenFile("redis-aof.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			slog.Error(fmt.Sprintf("Failed to open append only file for writing: %v", err))
-			os.Exit(1)
+			return Configuration{}, fmt.Errorf("failed to open append only file for writing: %w", err)
 		}
 
 		configuration.AppendLogReader, err = os.Open("redis-aof.log")
 		if err != nil {
-			slog.Error(fmt.Sprintf("Failed to open append only file for restore: %v", err))
-			os.Exit(1)
+			return Configuration{}, fmt.Errorf("failed to open append only file for restore: %w", err)
 		}
 	}
-	return configuration
+
+	return configuration, nil
 }

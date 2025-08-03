@@ -10,7 +10,11 @@ import (
 )
 
 func main() {
-	configuration := config.LoadConfiguration()
+	configuration, err := config.LoadConfiguration()
+	if err != nil {
+		slog.Error(fmt.Sprintf("Failed to load configuration: %v", err))
+		os.Exit(1)
+	}
 
 	serverMonitor := make(server.MonitorChannel)
 
