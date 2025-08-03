@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"redis-challenge/internal/command"
 	"redis-challenge/internal/protocol"
 	"redis-challenge/internal/store"
@@ -16,7 +17,8 @@ type restorer struct {
 func (h restorer) RestoreFromLog(reader io.Reader) error {
 	var buffer bytes.Buffer
 
-	readBuffer := make([]byte, 1024)
+	var totalReadByteCount int
+	readBuffer := make([]byte, 32768)
 
 readMore:
 	for {
@@ -28,32 +30,41 @@ readMore:
 
 			return fmt.Errorf("failed to read request: %w", err)
 		}
+		totalReadByteCount += bytesRead
+		slog.Info("read bytes", "bytes", bytesRead, "total", totalReadByteCount)
+
 		buffer.Write(readBuffer[:bytesRead])
 
+		readBytes := buffer.Bytes()
+
+		offset := 0
 		for {
-			protocolData, requestByteCount := protocol.ReadFrame(readBuffer)
+			protocolData, requestByteCount := protocol.ReadFrame(readBytes[offset:])
 			if requestByteCount == 0 {
+				remainingBytes := readBytes[offset:]
+				buffer.Reset()
+				buffer.Write(remainingBytes)
 				continue readMore
 			}
 
-			err = h.executeCommand(protocolData, buffer)
+			err = h.executeCommand(protocolData, readBytes[offset:offset+requestByteCount])
 			if err != nil {
 				return err
 			}
 
-			copy(readBuffer, readBuffer[requestByteCount:])
+			offset += requestByteCount
 		}
 	}
 }
 
-func (h restorer) executeCommand(protocolData protocol.Data, buffer bytes.Buffer) error {
+func (h restorer) executeCommand(protocolData protocol.Data, requestBytes []byte) error {
 	parsedCommand, commandError := command.Validate(protocolData)
 
 	switch {
 	case commandError != nil:
-		return fmt.Errorf("failed to parse request from log: %v %s", commandError, buffer.String())
+		return fmt.Errorf("failed to parse request from log: %v %s", commandError, string(requestBytes))
 	case parsedCommand == nil:
-		return fmt.Errorf("request from log is not a command: %v %s", commandError, buffer.String())
+		return fmt.Errorf("request from log is not a command: %v %s", commandError, string(requestBytes))
 	default:
 		_, err := parsedCommand.Execute(h.store)
 		if err != nil {
