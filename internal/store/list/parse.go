@@ -1,11 +1,20 @@
 package list
 
-func parseListFromStoredData(storedData any) ([]string, bool) {
+type DoubleEndedList struct {
+	Left  []string
+	Right []string
+}
+
+func (l DoubleEndedList) Length() int {
+	return len(l.Left) + len(l.Right)
+}
+
+func parseListFromStoredData(storedData any) (DoubleEndedList, bool) {
 	if storedData == nil {
-		return nil, true
+		return DoubleEndedList{}, true
 	}
-	if stringList, ok := storedData.([]string); ok {
+	if stringList, ok := storedData.(DoubleEndedList); ok {
 		return stringList, true
 	}
-	return nil, false
+	return DoubleEndedList{}, false
 }

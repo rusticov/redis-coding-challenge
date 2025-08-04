@@ -96,7 +96,7 @@ func (s *InMemoryStore) LeftPush(key string, values []string) (int64, error) {
 		expiryTimeInMilliseconds: maximumTimeInFuture,
 	}
 
-	return int64(len(updatedList)), nil
+	return int64(updatedList.Length()), nil
 }
 
 func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
@@ -111,7 +111,7 @@ func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
 		expiryTimeInMilliseconds: maximumTimeInFuture,
 	}
 
-	return int64(len(updatedList)), nil
+	return int64(updatedList.Length()), nil
 }
 
 func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([]string, error) {

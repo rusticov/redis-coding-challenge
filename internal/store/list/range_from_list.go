@@ -6,9 +6,11 @@ func ReadRangeFromStoreList(storedData any, start, end int) ([]string, bool) {
 		return nil, false
 	}
 
+	length := storedList.Length()
+
 	from := start
 	if start < 0 {
-		from = len(storedList) + start
+		from = length + start
 	}
 	if from < 0 {
 		from = 0
@@ -16,17 +18,39 @@ func ReadRangeFromStoreList(storedData any, start, end int) ([]string, bool) {
 
 	to := end + 1
 	if end < 0 {
-		to = len(storedList) + end + 1
+		to = length + end + 1
 	}
 
-	if storedList == nil {
+	if length == 0 {
 		return nil, true
 	}
 	if to <= from {
 		return nil, true
 	}
-	if to > len(storedList) {
-		to = len(storedList)
+	if to > length {
+		to = length
 	}
-	return storedList[from:to], true
+
+	middleIndex := len(storedList.Left)
+
+	switch {
+	case to <= middleIndex:
+		left := make([]string, to-from)
+		for i, x := range storedList.Left[middleIndex-to : middleIndex-from] {
+			left[to-from-i-1] = x
+		}
+		return left, true
+	case from < middleIndex:
+		result := make([]string, to-from)
+		fromLeftCount := middleIndex - from
+
+		for i, x := range storedList.Left[0 : middleIndex-from] {
+			result[fromLeftCount-i-1] = x
+		}
+		copy(result[fromLeftCount:], storedList.Right)
+
+		return result, true
+	default:
+		return storedList.Right[from-middleIndex : to-middleIndex], true
+	}
 }

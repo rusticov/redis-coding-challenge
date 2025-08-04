@@ -3,6 +3,7 @@ package list_test
 import (
 	"github.com/stretchr/testify/assert"
 	"redis-challenge/internal/store/list"
+	"slices"
 	"testing"
 )
 
@@ -21,66 +22,116 @@ func TestReadRangeFromStoreList(t *testing.T) {
 		assert.False(t, ok)
 	})
 
-	t.Run("range with start in range equal to end returns value", func(t *testing.T) {
-		values, ok := list.ReadRangeFromStoreList([]string{"a", "b", "c", "d"}, 1, 1)
+	testCases := map[string]struct {
+		storedList []string
+		start      int
+		end        int
+		expected   []string
+	}{
+		"range from empty list is an empty list": {
+			storedList: nil,
+			start:      0,
+			end:        10,
+			expected:   nil,
+		},
+		"range from right-pushed list with one value is the value": {
+			storedList: []string{"a", "b", "c", "d"},
+			start:      1,
+			end:        1,
+			expected:   []string{"b"},
+		},
+		"range from right-pushed list with start and end both in range": {
+			storedList: []string{"a", "b", "c", "d", "e"},
+			start:      1,
+			end:        3,
+			expected:   []string{"b", "c", "d"},
+		},
+		"range from right-pushed list with end after start both in range returns nil": {
+			storedList: []string{"a", "b", "c", "d", "e"},
+			start:      3,
+			end:        1,
+			expected:   nil,
+		},
+		"range from right-pushed list with start in range and end beyond range": {
+			storedList: []string{"a", "b", "c", "d", "e"},
+			start:      3,
+			end:        10,
+			expected:   []string{"d", "e"},
+		},
+		"range from right-pushed list with start negative and end positive such that start is before end": {
+			storedList: []string{"a", "b", "c", "d", "e"},
+			start:      -3,
+			end:        3,
+			expected:   []string{"c", "d"},
+		},
+		"range from right-pushed list with start negative and end positive such that start counts back beyond list start is treated as back to list start": {
+			storedList: []string{"a", "b", "c", "d", "e"},
+			start:      -100,
+			end:        3,
+			expected:   []string{"a", "b", "c", "d"},
+		},
+		"range from right-pushed list with end -1 includes the end of the list": {
+			storedList: []string{"a", "b", "c", "d", "e"},
+			start:      1,
+			end:        -1,
+			expected:   []string{"b", "c", "d", "e"},
+		},
+		"range from right-pushed list with start positive and end negative such that start is before end": {
+			storedList: []string{"a", "b", "c", "d", "e"},
+			start:      1,
+			end:        -2,
+			expected:   []string{"b", "c", "d"},
+		},
+		"range from right-pushed list with start positive and end negative such that end is before start": {
+			storedList: []string{"a", "b", "c", "d", "e"},
+			start:      4,
+			end:        -3,
+			expected:   nil,
+		},
+	}
 
-		assert.True(t, ok, "should be ok")
-		assert.Equal(t, []string{"b"}, values)
-	})
+	for name, testCase := range testCases {
+		t.Run("range from right-pushed list "+name, func(t *testing.T) {
+			rightPushedList := list.DoubleEndedList{Right: testCase.storedList}
 
-	t.Run("range with start to end both in range", func(t *testing.T) {
-		values, ok := list.ReadRangeFromStoreList([]string{"a", "b", "c", "d", "e"}, 1, 3)
+			values, ok := list.ReadRangeFromStoreList(rightPushedList, testCase.start, testCase.end)
+
+			assert.True(t, ok, "should be ok")
+			assert.Equal(t, testCase.expected, values)
+		})
+
+		t.Run("range from left-pushed list "+name, func(t *testing.T) {
+			leftPushedList := list.DoubleEndedList{Left: testCase.storedList}
+			slices.Reverse(leftPushedList.Left)
+
+			values, ok := list.ReadRangeFromStoreList(leftPushedList, testCase.start, testCase.end)
+
+			assert.True(t, ok, "should be ok")
+			assert.Equal(t, testCase.expected, values)
+		})
+	}
+
+	t.Run("range from left and right pushed list with all values found on the right", func(t *testing.T) {
+		pushedList := list.DoubleEndedList{
+			Left:  []string{"1", "2", "3"},
+			Right: []string{"a", "b", "c", "d", "e"},
+		}
+
+		values, ok := list.ReadRangeFromStoreList(pushedList, 4, 6)
 
 		assert.True(t, ok, "should be ok")
 		assert.Equal(t, []string{"b", "c", "d"}, values)
 	})
 
-	t.Run("range with end after start both in range returns nil", func(t *testing.T) {
-		values, ok := list.ReadRangeFromStoreList([]string{"a", "b", "c", "d", "e"}, 3, 1)
+	t.Run("range from left and right pushed list with values that straddle both lists", func(t *testing.T) {
+		pushedList := list.DoubleEndedList{
+			Left:  []string{"1", "2", "3"},
+			Right: []string{"a", "b", "c", "d", "e"},
+		}
+
+		values, ok := list.ReadRangeFromStoreList(pushedList, 1, 4)
 
 		assert.True(t, ok, "should be ok")
-		assert.Nil(t, values)
-	})
-
-	t.Run("range with start in range to end beyond range", func(t *testing.T) {
-		values, ok := list.ReadRangeFromStoreList([]string{"a", "b", "c", "d", "e"}, 3, 10)
-
-		assert.True(t, ok, "should be ok")
-		assert.Equal(t, []string{"d", "e"}, values, "read values up to the end of the list")
-	})
-
-	t.Run("range with start negative and end positive such that start is before end", func(t *testing.T) {
-		values, ok := list.ReadRangeFromStoreList([]string{"a", "b", "c", "d", "e"}, -3, 3)
-
-		assert.True(t, ok, "should be ok")
-		assert.Equal(t, []string{"c", "d"}, values)
-	})
-
-	t.Run("range with start negative and end positive such that start counts back beyond list start is treated as back to list start", func(t *testing.T) {
-		values, ok := list.ReadRangeFromStoreList([]string{"a", "b", "c", "d", "e"}, -100, 3)
-
-		assert.True(t, ok, "should be ok")
-		assert.Equal(t, []string{"a", "b", "c", "d"}, values)
-	})
-
-	t.Run("range with end -1 includes the end of the list", func(t *testing.T) {
-		values, ok := list.ReadRangeFromStoreList([]string{"a", "b", "c", "d", "e"}, 1, -1)
-
-		assert.True(t, ok, "should be ok")
-		assert.Equal(t, []string{"b", "c", "d", "e"}, values)
-	})
-
-	t.Run("range with start positive and end negative such that start is before end", func(t *testing.T) {
-		values, ok := list.ReadRangeFromStoreList([]string{"a", "b", "c", "d", "e"}, 1, -2)
-
-		assert.True(t, ok, "should be ok")
-		assert.Equal(t, []string{"b", "c", "d"}, values)
-	})
-
-	t.Run("range with start positive and end negative such that end is before start", func(t *testing.T) {
-		values, ok := list.ReadRangeFromStoreList([]string{"a", "b", "c", "d", "e"}, 4, -3)
-
-		assert.True(t, ok, "should be ok")
-		assert.Empty(t, values)
+		assert.Equal(t, []string{"2", "1", "a", "b"}, values)
 	})
 }
