@@ -124,6 +124,22 @@ func TestReadRangeFromStoreList(t *testing.T) {
 
 			assert.Equal(t, testCase.expected, result)
 		})
+
+		t.Run("iterate from left-pushed list "+name, func(t *testing.T) {
+			xs := make([]string, len(testCase.storedList))
+			copy(xs, testCase.storedList)
+			slices.Reverse(xs)
+
+			leftPushedList, _ := list.LeftPush(xs, nil)
+			rangeLimitedList := leftPushedList.Filter(testCase.start, testCase.end)
+
+			var result []string
+			for _, value := range rangeLimitedList.Range() {
+				result = append(result, value)
+			}
+
+			assert.Equal(t, testCase.expected, result)
+		})
 	}
 
 	t.Run("range from left and right pushed list with all values found on the right", func(t *testing.T) {
