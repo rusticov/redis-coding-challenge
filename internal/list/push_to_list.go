@@ -1,6 +1,6 @@
 package list
 
-func LeftPushToOldList(newValues []string, storedData any) (DoubleEndedList, bool) {
+func LeftPush(newValues []string, storedData any) (DoubleEndedList, bool) {
 	list, ok := parseListFromStoredData(storedData)
 	if !ok {
 		return DoubleEndedList{}, false
@@ -10,7 +10,7 @@ func LeftPushToOldList(newValues []string, storedData any) (DoubleEndedList, boo
 	return list, true
 }
 
-func RightPushToOldList(newValues []string, storedData any) (DoubleEndedList, bool) {
+func RightPush(newValues []string, storedData any) (DoubleEndedList, bool) {
 	list, ok := parseListFromStoredData(storedData)
 	if !ok {
 		return DoubleEndedList{}, false

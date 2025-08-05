@@ -86,7 +86,7 @@ func (s *InMemoryStore) readInteger(key string) (int64, error) {
 
 func (s *InMemoryStore) LeftPush(key string, values []string) (int64, error) {
 	oldList, _ := s.readEntry(key)
-	updatedList, ok := list2.LeftPushToOldList(values, oldList.data)
+	updatedList, ok := list2.LeftPush(values, oldList.data)
 	if !ok {
 		return 0, ErrorWrongOperationType
 	}
@@ -101,7 +101,7 @@ func (s *InMemoryStore) LeftPush(key string, values []string) (int64, error) {
 
 func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
 	oldList, _ := s.readEntry(key)
-	updatedList, ok := list2.RightPushToOldList(values, oldList.data)
+	updatedList, ok := list2.RightPush(values, oldList.data)
 	if !ok {
 		return 0, ErrorWrongOperationType
 	}
