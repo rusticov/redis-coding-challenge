@@ -132,10 +132,5 @@ func TestReadRangeFromStoreList(t *testing.T) {
 }
 
 func confirmListFilterRange(t *testing.T, expected []string, pushedList list.DoubleEndedList) {
-	var result []string
-	for _, value := range pushedList.Range() {
-		result = append(result, value)
-	}
-
-	assert.Equal(t, expected, result)
+	assert.Equal(t, expected, pushedList.ToList())
 }

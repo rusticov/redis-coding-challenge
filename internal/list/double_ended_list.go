@@ -7,12 +7,12 @@ type DoubleEndedList struct {
 	right []string
 }
 
-func (l DoubleEndedList) Length() int {
+func (l DoubleEndedList) Len() int {
 	return len(l.left) + len(l.right)
 }
 
 func (l DoubleEndedList) Filter(start, end int) DoubleEndedList {
-	length := l.Length()
+	length := l.Len()
 
 	from := start
 	if start < 0 {
@@ -64,6 +64,14 @@ func (l DoubleEndedList) Range() iter.Seq2[int, string] {
 			i++
 		}
 	}
+}
+
+func (l DoubleEndedList) ToList() []string {
+	var result []string
+	for _, value := range l.Range() {
+		result = append(result, value)
+	}
+	return result
 }
 
 func LeftPush(newValues []string, storedData any) (DoubleEndedList, bool) {

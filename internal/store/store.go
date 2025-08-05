@@ -1,8 +1,10 @@
 package store
 
+import "redis-challenge/internal/list"
+
 type Store interface {
 	ReadString(key string) (string, error)
-	ReadListRange(key string, fromIndex int, toIndex int) ([]string, error)
+	ReadListRange(key string, fromIndex int, toIndex int) (list.DoubleEndedList, error)
 	Exists(key string) bool
 
 	Write(key string, value string, expiryOption ExpiryOption, expiry int64)

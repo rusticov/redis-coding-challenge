@@ -1,10 +1,11 @@
 package store_test
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"redis-challenge/internal/store"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPushingListsIntoStore(t *testing.T) {
@@ -22,7 +23,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 
 		listRange, err := s.ReadListRange("key", 0, -1)
 		require.NoError(t, err, "list range can be read")
-		assert.Equal(t, []string{"b", "a"}, listRange, "list range should be read with value in reverse order")
+		assert.Equal(t, []string{"b", "a"}, listRange.ToList(), "list range should be read with value in reverse order")
 	})
 
 	t.Run("left push to key with list should push to start of the list", func(t *testing.T) {
@@ -40,7 +41,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 
 		listRange, err := s.ReadListRange("key", 0, -1)
 		require.NoError(t, err, "list range can be read")
-		assert.Equal(t, []string{"e", "d", "c", "b", "a"}, listRange, "list range should be read with value in reverse order")
+		assert.Equal(t, []string{"e", "d", "c", "b", "a"}, listRange.ToList(), "list range should be read with value in reverse order")
 	})
 
 	t.Run("left push against key with string value should not create list", func(t *testing.T) {
@@ -73,7 +74,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 
 		listRange, err := s.ReadListRange("key", 0, -1)
 		require.NoError(t, err, "list range can be read")
-		assert.Equal(t, []string{"b", "a"}, listRange, "list range should be read")
+		assert.Equal(t, []string{"b", "a"}, listRange.ToList(), "list range should be read")
 	})
 
 	t.Run("right push to new key should create list", func(t *testing.T) {
@@ -89,7 +90,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 
 		listRange, err := s.ReadListRange("key", 0, -1)
 		require.NoError(t, err, "list range can be read")
-		assert.Equal(t, []string{"a", "b"}, listRange, "list range should be read with values in order")
+		assert.Equal(t, []string{"a", "b"}, listRange.ToList(), "list range should be read with values in order")
 	})
 
 	t.Run("right push to key with list should push to start of the list", func(t *testing.T) {
@@ -107,7 +108,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 
 		listRange, err := s.ReadListRange("key", 0, -1)
 		require.NoError(t, err, "list range can be read")
-		assert.Equal(t, []string{"a", "b", "c", "d", "e"}, listRange, "list range should be read with value in order")
+		assert.Equal(t, []string{"a", "b", "c", "d", "e"}, listRange.ToList(), "list range should be read with value in order")
 	})
 
 	t.Run("right push against key with string value should not create list", func(t *testing.T) {
@@ -140,7 +141,7 @@ func TestPushingListsIntoStore(t *testing.T) {
 
 		listRange, err := s.ReadListRange("key", 0, -1)
 		require.NoError(t, err, "list range can be read")
-		assert.Equal(t, []string{"a", "b"}, listRange, "list range should be read")
+		assert.Equal(t, []string{"a", "b"}, listRange.ToList(), "list range should be read")
 	})
 
 	t.Run("reading a string value against a list should error", func(t *testing.T) {

@@ -1,10 +1,11 @@
 package store_test
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"redis-challenge/internal/store"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStoreList(t *testing.T) {
@@ -25,7 +26,7 @@ func TestStoreList(t *testing.T) {
 		values, err := s.ReadListRange("key", 0, 1)
 		require.NoError(t, err)
 
-		assert.Equal(t, []string{"b", "a"}, values)
+		assert.Equal(t, []string{"b", "a"}, values.ToList())
 	})
 
 	t.Run("left push to key with a list", func(t *testing.T) {
@@ -56,7 +57,7 @@ func TestStoreList(t *testing.T) {
 		values, err := s.ReadListRange("key", 0, 1)
 		require.NoError(t, err)
 
-		assert.Equal(t, []string{"a", "b"}, values)
+		assert.Equal(t, []string{"a", "b"}, values.ToList())
 	})
 
 	t.Run("right push to key with a list", func(t *testing.T) {
@@ -95,7 +96,7 @@ func TestStoreList(t *testing.T) {
 		values, err := s.ReadListRange("key", 0, 10)
 		require.NoError(t, err)
 
-		assert.Equal(t, []string{"a", "b", "c", "d", "e"}, values)
+		assert.Equal(t, []string{"a", "b", "c", "d", "e"}, values.ToList())
 	})
 
 	t.Run("read sub-range of list", func(t *testing.T) {
@@ -110,6 +111,6 @@ func TestStoreList(t *testing.T) {
 		values, err := s.ReadListRange("key", 2, -2)
 		require.NoError(t, err)
 
-		assert.Equal(t, []string{"c", "d"}, values)
+		assert.Equal(t, []string{"c", "d"}, values.ToList())
 	})
 }

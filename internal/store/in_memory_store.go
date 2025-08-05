@@ -96,7 +96,7 @@ func (s *InMemoryStore) LeftPush(key string, values []string) (int64, error) {
 		expiryTimeInMilliseconds: maximumTimeInFuture,
 	}
 
-	return int64(updatedList.Length()), nil
+	return int64(updatedList.Len()), nil
 }
 
 func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
@@ -111,18 +111,14 @@ func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
 		expiryTimeInMilliseconds: maximumTimeInFuture,
 	}
 
-	return int64(updatedList.Length()), nil
+	return int64(updatedList.Len()), nil
 }
 
-func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([]string, error) {
+func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) (list.DoubleEndedList, error) {
 	if values, ok := list.ReadRangeFromStoreList(s.keyEntries[key].data, fromIndex, toIndex); ok {
-		var stringValues []string
-		for _, x := range values.Range() {
-			stringValues = append(stringValues, x)
-		}
-		return stringValues, nil
+		return values, nil
 	}
-	return nil, ErrorWrongOperationType
+	return list.DoubleEndedList{}, ErrorWrongOperationType
 }
 
 func (s *InMemoryStore) Write(key string, value string, expiryOption ExpiryOption, expiry int64) {

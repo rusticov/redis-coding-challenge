@@ -76,10 +76,5 @@ func (cmd LRangeCommand) Execute(s store.Store) (protocol.Data, error) {
 		return nil, err
 	}
 
-	values := make([]protocol.Data, len(listRange))
-	for i, value := range listRange {
-		values[i] = protocol.NewBulkString(value)
-	}
-
-	return protocol.NewArray(values), nil
+	return protocol.NewDoubleEndedList(listRange), nil
 }

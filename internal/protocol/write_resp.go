@@ -79,7 +79,7 @@ func writeArray(out io.Writer, d Array) error {
 }
 
 func writeDoubleEndedList(out io.Writer, d DoubleEndedList) error {
-	if err := writeNumber(out, ArraySymbol, int64(d.Data.Length())); err != nil {
+	if err := writeNumber(out, ArraySymbol, int64(d.Data.Len())); err != nil {
 		return err
 	}
 
