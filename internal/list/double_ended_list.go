@@ -9,6 +9,38 @@ func (l DoubleEndedList) Length() int {
 	return len(l.left) + len(l.right)
 }
 
+func (l DoubleEndedList) Filter(start, end int) DoubleEndedList {
+	length := l.Length()
+
+	from := start
+	if start < 0 {
+		from = length + start
+	}
+	if from < 0 {
+		from = 0
+	}
+
+	to := end + 1
+	if end < 0 {
+		to = length + end + 1
+	}
+
+	if length == 0 || to <= from {
+		return DoubleEndedList{}
+	}
+	if to > length {
+		to = length
+	}
+
+	return DoubleEndedList{
+		right: l.right[from:to],
+	}
+}
+
+func (l DoubleEndedList) Range() []string {
+	return l.right
+}
+
 func LeftPush(newValues []string, storedData any) (DoubleEndedList, bool) {
 	list, ok := parseListFromStoredData(storedData)
 	if !ok {
