@@ -1,7 +1,7 @@
 package store
 
 import (
-	"redis-challenge/internal/store/list"
+	list2 "redis-challenge/internal/list"
 	"strconv"
 )
 
@@ -86,7 +86,7 @@ func (s *InMemoryStore) readInteger(key string) (int64, error) {
 
 func (s *InMemoryStore) LeftPush(key string, values []string) (int64, error) {
 	oldList, _ := s.readEntry(key)
-	updatedList, ok := list.LeftPushToOldList(values, oldList.data)
+	updatedList, ok := list2.LeftPushToOldList(values, oldList.data)
 	if !ok {
 		return 0, ErrorWrongOperationType
 	}
@@ -101,7 +101,7 @@ func (s *InMemoryStore) LeftPush(key string, values []string) (int64, error) {
 
 func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
 	oldList, _ := s.readEntry(key)
-	updatedList, ok := list.RightPushToOldList(values, oldList.data)
+	updatedList, ok := list2.RightPushToOldList(values, oldList.data)
 	if !ok {
 		return 0, ErrorWrongOperationType
 	}
@@ -115,7 +115,7 @@ func (s *InMemoryStore) RightPush(key string, values []string) (int64, error) {
 }
 
 func (s *InMemoryStore) ReadListRange(key string, fromIndex int, toIndex int) ([]string, error) {
-	if values, ok := list.ReadRangeFromStoreList(s.keyEntries[key].data, fromIndex, toIndex); ok {
+	if values, ok := list2.ReadRangeFromStoreList(s.keyEntries[key].data, fromIndex, toIndex); ok {
 		return values, nil
 	}
 	return nil, ErrorWrongOperationType
