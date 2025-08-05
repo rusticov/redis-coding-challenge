@@ -74,6 +74,15 @@ func (l DoubleEndedList) ToList() []string {
 	return result
 }
 
+func ReadRangeFromStoreList(storedData any, start, end int) (DoubleEndedList, bool) {
+	storedList, ok := parseListFromStoredData(storedData)
+	if !ok {
+		return DoubleEndedList{}, false
+	}
+
+	return storedList.Filter(start, end), true
+}
+
 func LeftPush(newValues []string, storedData any) (DoubleEndedList, bool) {
 	list, ok := parseListFromStoredData(storedData)
 	if !ok {
