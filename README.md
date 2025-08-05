@@ -60,10 +60,20 @@ go test -v ./...
 ## Project Structure
 
 - `internal/command/` - Command implementations (PING, ECHO, GET, SET, etc)
+- `internal/config/` - Loading of configuration for running the server
+- `internal/list/` - Contains a specialized list implementation that is efficient pushing to the start and end of the
+  list (left and right)
 - `internal/protocol/` - Redis protocol parsing and serialization
 - `internal/server/` - Server implementation
-- `internal/store/` - Key-value store implementation
-- `tests/` - Test utilities and high-level test cases
+- `internal/store/` - Key-value store implementation including a Clock to access time and an expiry scanner to remove
+  expired keys
+- `tests/` - Test utilities and high-level test cases many of which can be run against a real Redis server
+
+### Clock
+
+The default Clock implementation uses the system clock. Clock variants are provided
+for testing against a fake clock. The fake clock can be used to simulate time passing
+and to verify key expiry is handled correctly.
 
 ## Testing Against Real Redis Server
 
@@ -86,7 +96,7 @@ cloned implementation.  Enums are used to switch between using Redis and code.
 A typical flow will mean that a test is first verified as accurate by running against Redis, before
 then using that test to generate implementation in the clone.
 
-#### Basic Test Structure
+#### Typical Basic Test Structure
 
 ```go
 import (
