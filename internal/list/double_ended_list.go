@@ -40,7 +40,7 @@ func (l DoubleEndedList) Filter(start, end int) DoubleEndedList {
 	case to <= middleIndex:
 		return DoubleEndedList{left: l.left[middleIndex-to : middleIndex-from]}
 	case from < middleIndex:
-		return DoubleEndedList{}
+		return DoubleEndedList{left: l.left[0 : middleIndex-from], right: l.right[:to-middleIndex]}
 	default:
 		return DoubleEndedList{right: l.right[from-middleIndex : to-middleIndex]}
 	}

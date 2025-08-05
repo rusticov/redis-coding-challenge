@@ -14,6 +14,8 @@ func TestReadRangeFromStoreList(t *testing.T) {
 
 		assert.True(t, ok, "should be ok")
 		assert.Empty(t, values, "should return an empty list")
+
+		confirmListFilterRange(t, nil, list.DoubleEndedList{})
 	})
 
 	t.Run("range from string is not ok", func(t *testing.T) {
@@ -117,12 +119,7 @@ func TestReadRangeFromStoreList(t *testing.T) {
 			rightPushedList, _ := list.RightPush(testCase.storedList, nil)
 			rangeLimitedList := rightPushedList.Filter(testCase.start, testCase.end)
 
-			var result []string
-			for _, value := range rangeLimitedList.Range() {
-				result = append(result, value)
-			}
-
-			assert.Equal(t, testCase.expected, result)
+			confirmListFilterRange(t, testCase.expected, rangeLimitedList)
 		})
 
 		t.Run("iterate from left-pushed list "+name, func(t *testing.T) {
@@ -133,12 +130,7 @@ func TestReadRangeFromStoreList(t *testing.T) {
 			leftPushedList, _ := list.LeftPush(xs, nil)
 			rangeLimitedList := leftPushedList.Filter(testCase.start, testCase.end)
 
-			var result []string
-			for _, value := range rangeLimitedList.Range() {
-				result = append(result, value)
-			}
-
-			assert.Equal(t, testCase.expected, result)
+			confirmListFilterRange(t, testCase.expected, rangeLimitedList)
 		})
 	}
 
@@ -150,6 +142,8 @@ func TestReadRangeFromStoreList(t *testing.T) {
 
 		assert.True(t, ok, "should be ok")
 		assert.Equal(t, []string{"b", "c", "d"}, values)
+
+		confirmListFilterRange(t, []string{"b", "c", "d"}, pushedList.Filter(4, 6))
 	})
 
 	t.Run("range from left and right pushed list with values that straddle both lists", func(t *testing.T) {
@@ -160,5 +154,16 @@ func TestReadRangeFromStoreList(t *testing.T) {
 
 		assert.True(t, ok, "should be ok")
 		assert.Equal(t, []string{"2", "1", "a", "b"}, values)
+
+		confirmListFilterRange(t, []string{"2", "1", "a", "b"}, pushedList.Filter(1, 4))
 	})
+}
+
+func confirmListFilterRange(t *testing.T, expected []string, pushedList list.DoubleEndedList) {
+	var result []string
+	for _, value := range pushedList.Range() {
+		result = append(result, value)
+	}
+
+	assert.Equal(t, expected, result)
 }
