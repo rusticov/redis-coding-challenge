@@ -21,6 +21,8 @@ func WriteData(out io.Writer, data Data) error {
 		return writeBulkString(out, d)
 	case Array:
 		return writeArray(out, d)
+	case DoubleEndedList:
+		return writeDoubleEndedList(out, d)
 	default:
 		text = fmt.Sprintf("-ERR unknown data type\r\n")
 	}
@@ -69,6 +71,20 @@ func writeArray(out io.Writer, d Array) error {
 
 	for _, item := range d.Data {
 		if err := WriteData(out, item); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func writeDoubleEndedList(out io.Writer, d DoubleEndedList) error {
+	if err := writeNumber(out, ArraySymbol, int64(d.Data.Length())); err != nil {
+		return err
+	}
+
+	for _, item := range d.Data.Range() {
+		if err := WriteData(out, BulkString(item)); err != nil {
 			return err
 		}
 	}
