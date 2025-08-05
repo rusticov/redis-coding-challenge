@@ -2,7 +2,7 @@ package list_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	list2 "redis-challenge/internal/list"
+	"redis-challenge/internal/list"
 	"slices"
 	"testing"
 )
@@ -10,14 +10,14 @@ import (
 func TestReadRangeFromStoreList(t *testing.T) {
 
 	t.Run("range from empty list is an empty list", func(t *testing.T) {
-		values, ok := list2.ReadRangeFromStoreList(nil, 0, 10)
+		values, ok := list.ReadRangeFromStoreList(nil, 0, 10)
 
 		assert.True(t, ok, "should be ok")
 		assert.Empty(t, values, "should return an empty list")
 	})
 
 	t.Run("range from string is not ok", func(t *testing.T) {
-		_, ok := list2.ReadRangeFromStoreList("", 0, 10)
+		_, ok := list.ReadRangeFromStoreList("", 0, 10)
 
 		assert.False(t, ok)
 	})
@@ -92,19 +92,21 @@ func TestReadRangeFromStoreList(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run("range from right-pushed list "+name, func(t *testing.T) {
-			rightPushedList := list2.DoubleEndedList{right: testCase.storedList}
+			rightPushedList, _ := list.RightPush(testCase.storedList, nil)
 
-			values, ok := list2.ReadRangeFromStoreList(rightPushedList, testCase.start, testCase.end)
+			values, ok := list.ReadRangeFromStoreList(rightPushedList, testCase.start, testCase.end)
 
 			assert.True(t, ok, "should be ok")
 			assert.Equal(t, testCase.expected, values)
 		})
 
 		t.Run("range from left-pushed list "+name, func(t *testing.T) {
-			leftPushedList := list2.DoubleEndedList{left: testCase.storedList}
-			slices.Reverse(leftPushedList.left)
+			xs := testCase.storedList[:]
+			slices.Reverse(xs)
 
-			values, ok := list2.ReadRangeFromStoreList(leftPushedList, testCase.start, testCase.end)
+			leftPushedList, _ := list.LeftPush(xs, nil)
+
+			values, ok := list.ReadRangeFromStoreList(leftPushedList, testCase.start, testCase.end)
 
 			assert.True(t, ok, "should be ok")
 			assert.Equal(t, testCase.expected, values)
@@ -112,24 +114,20 @@ func TestReadRangeFromStoreList(t *testing.T) {
 	}
 
 	t.Run("range from left and right pushed list with all values found on the right", func(t *testing.T) {
-		pushedList := list2.DoubleEndedList{
-			left:  []string{"1", "2", "3"},
-			right: []string{"a", "b", "c", "d", "e"},
-		}
+		pushedList, _ := list.LeftPush([]string{"1", "2", "3"}, nil)
+		pushedList, _ = list.RightPush([]string{"a", "b", "c", "d", "e"}, pushedList)
 
-		values, ok := list2.ReadRangeFromStoreList(pushedList, 4, 6)
+		values, ok := list.ReadRangeFromStoreList(pushedList, 4, 6)
 
 		assert.True(t, ok, "should be ok")
 		assert.Equal(t, []string{"b", "c", "d"}, values)
 	})
 
 	t.Run("range from left and right pushed list with values that straddle both lists", func(t *testing.T) {
-		pushedList := list2.DoubleEndedList{
-			left:  []string{"1", "2", "3"},
-			right: []string{"a", "b", "c", "d", "e"},
-		}
+		pushedList, _ := list.LeftPush([]string{"1", "2", "3"}, nil)
+		pushedList, _ = list.RightPush([]string{"a", "b", "c", "d", "e"}, pushedList)
 
-		values, ok := list2.ReadRangeFromStoreList(pushedList, 1, 4)
+		values, ok := list.ReadRangeFromStoreList(pushedList, 1, 4)
 
 		assert.True(t, ok, "should be ok")
 		assert.Equal(t, []string{"2", "1", "a", "b"}, values)
