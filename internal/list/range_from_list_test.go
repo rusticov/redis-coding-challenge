@@ -92,7 +92,7 @@ func TestReadRangeFromStoreList(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run("range from right-pushed list "+name, func(t *testing.T) {
-			rightPushedList := list2.DoubleEndedList{Right: testCase.storedList}
+			rightPushedList := list2.DoubleEndedList{right: testCase.storedList}
 
 			values, ok := list2.ReadRangeFromStoreList(rightPushedList, testCase.start, testCase.end)
 
@@ -101,8 +101,8 @@ func TestReadRangeFromStoreList(t *testing.T) {
 		})
 
 		t.Run("range from left-pushed list "+name, func(t *testing.T) {
-			leftPushedList := list2.DoubleEndedList{Left: testCase.storedList}
-			slices.Reverse(leftPushedList.Left)
+			leftPushedList := list2.DoubleEndedList{left: testCase.storedList}
+			slices.Reverse(leftPushedList.left)
 
 			values, ok := list2.ReadRangeFromStoreList(leftPushedList, testCase.start, testCase.end)
 
@@ -113,8 +113,8 @@ func TestReadRangeFromStoreList(t *testing.T) {
 
 	t.Run("range from left and right pushed list with all values found on the right", func(t *testing.T) {
 		pushedList := list2.DoubleEndedList{
-			Left:  []string{"1", "2", "3"},
-			Right: []string{"a", "b", "c", "d", "e"},
+			left:  []string{"1", "2", "3"},
+			right: []string{"a", "b", "c", "d", "e"},
 		}
 
 		values, ok := list2.ReadRangeFromStoreList(pushedList, 4, 6)
@@ -125,8 +125,8 @@ func TestReadRangeFromStoreList(t *testing.T) {
 
 	t.Run("range from left and right pushed list with values that straddle both lists", func(t *testing.T) {
 		pushedList := list2.DoubleEndedList{
-			Left:  []string{"1", "2", "3"},
-			Right: []string{"a", "b", "c", "d", "e"},
+			left:  []string{"1", "2", "3"},
+			right: []string{"a", "b", "c", "d", "e"},
 		}
 
 		values, ok := list2.ReadRangeFromStoreList(pushedList, 1, 4)

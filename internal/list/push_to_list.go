@@ -6,7 +6,7 @@ func LeftPush(newValues []string, storedData any) (DoubleEndedList, bool) {
 		return DoubleEndedList{}, false
 	}
 
-	list.Left = append(list.Left, newValues...)
+	list.left = append(list.left, newValues...)
 	return list, true
 }
 
@@ -16,6 +16,6 @@ func RightPush(newValues []string, storedData any) (DoubleEndedList, bool) {
 		return DoubleEndedList{}, false
 	}
 
-	list.Right = append(list.Right, newValues...)
+	list.right = append(list.right, newValues...)
 	return list, true
 }

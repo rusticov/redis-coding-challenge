@@ -1,12 +1,12 @@
 package list
 
 type DoubleEndedList struct {
-	Left  []string
-	Right []string
+	left  []string
+	right []string
 }
 
 func (l DoubleEndedList) Length() int {
-	return len(l.Left) + len(l.Right)
+	return len(l.left) + len(l.right)
 }
 
 func parseListFromStoredData(storedData any) (DoubleEndedList, bool) {

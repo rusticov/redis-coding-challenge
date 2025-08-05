@@ -12,21 +12,21 @@ func TestRightPushValuesToList(t *testing.T) {
 		newList, ok := list2.RightPush([]string{"a"}, nil)
 
 		assert.True(t, ok, "should be ok")
-		assert.Equal(t, []string{"a"}, newList.Right)
+		assert.Equal(t, []string{"a"}, newList.right)
 	})
 
 	t.Run("right push 2 strings to empty list should be in order", func(t *testing.T) {
 		newList, ok := list2.RightPush([]string{"a", "b"}, nil)
 
 		assert.True(t, ok, "should be ok")
-		assert.Equal(t, []string{"a", "b"}, newList.Right)
+		assert.Equal(t, []string{"a", "b"}, newList.right)
 	})
 
 	t.Run("right push string to non-empty list of strings", func(t *testing.T) {
-		newList, ok := list2.RightPush([]string{"a", "b", "c"}, list2.DoubleEndedList{Right: []string{"d", "e", "f"}})
+		newList, ok := list2.RightPush([]string{"a", "b", "c"}, list2.DoubleEndedList{right: []string{"d", "e", "f"}})
 
 		assert.True(t, ok, "should be ok")
-		assert.Equal(t, []string{"d", "e", "f", "a", "b", "c"}, newList.Right, "value are in order")
+		assert.Equal(t, []string{"d", "e", "f", "a", "b", "c"}, newList.right, "value are in order")
 	})
 
 	t.Run("right push string to old value that is not a list should error", func(t *testing.T) {
