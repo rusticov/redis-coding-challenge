@@ -1,9 +1,10 @@
 package list_test
 
 import (
-	"github.com/stretchr/testify/assert"
 	"redis-challenge/internal/list"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPushToList(t *testing.T) {
@@ -17,7 +18,7 @@ func TestPushToList(t *testing.T) {
 		assert.True(t, ok, "should return ok")
 
 		values, ok := list.ReadRangeFromStoreList(pushedList, 0, -1)
-		assert.Equal(t, []string{"3", "2", "1", "c", "b", "a"}, values, "only new values are reversed")
+		confirmListFilterRange(t, []string{"3", "2", "1", "c", "b", "a"}, values)
 	})
 
 	t.Run("twice right push string to non-empty list of strings maintains order", func(t *testing.T) {
@@ -29,6 +30,6 @@ func TestPushToList(t *testing.T) {
 		assert.True(t, ok, "should be ok")
 
 		values, ok := list.ReadRangeFromStoreList(pushedList, 0, -1)
-		assert.Equal(t, []string{"d", "e", "f", "a", "b", "c"}, values, "value are in order")
+		confirmListFilterRange(t, []string{"d", "e", "f", "a", "b", "c"}, values)
 	})
 }

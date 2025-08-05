@@ -1,21 +1,20 @@
 package list_test
 
 import (
-	"github.com/stretchr/testify/assert"
 	"redis-challenge/internal/list"
 	"slices"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestReadRangeFromStoreList(t *testing.T) {
 
 	t.Run("range from empty list is an empty list", func(t *testing.T) {
-		values, ok := list.ReadRangeFromStoreList(nil, 0, 10)
+		emptyList, ok := list.ReadRangeFromStoreList(nil, 0, 10)
 
 		assert.True(t, ok, "should be ok")
-		assert.Empty(t, values, "should return an empty list")
-
-		confirmListFilterRange(t, nil, list.DoubleEndedList{})
+		confirmListFilterRange(t, nil, emptyList)
 	})
 
 	t.Run("range from string is not ok", func(t *testing.T) {
@@ -96,10 +95,11 @@ func TestReadRangeFromStoreList(t *testing.T) {
 		t.Run("range from right-pushed list "+name, func(t *testing.T) {
 			rightPushedList, _ := list.RightPush(testCase.storedList, nil)
 
-			values, ok := list.ReadRangeFromStoreList(rightPushedList, testCase.start, testCase.end)
+			rangeLimitedList, ok := list.ReadRangeFromStoreList(rightPushedList, testCase.start, testCase.end)
 
 			assert.True(t, ok, "should be ok")
-			assert.Equal(t, testCase.expected, values)
+
+			confirmListFilterRange(t, testCase.expected, rangeLimitedList)
 		})
 
 		t.Run("range from left-pushed list "+name, func(t *testing.T) {
@@ -109,27 +109,9 @@ func TestReadRangeFromStoreList(t *testing.T) {
 
 			leftPushedList, _ := list.LeftPush(xs, nil)
 
-			values, ok := list.ReadRangeFromStoreList(leftPushedList, testCase.start, testCase.end)
+			rangeLimitedList, ok := list.ReadRangeFromStoreList(leftPushedList, testCase.start, testCase.end)
 
 			assert.True(t, ok, "should be ok")
-			assert.Equal(t, testCase.expected, values)
-		})
-
-		t.Run("iterate from right-pushed list "+name, func(t *testing.T) {
-			rightPushedList, _ := list.RightPush(testCase.storedList, nil)
-			rangeLimitedList := rightPushedList.Filter(testCase.start, testCase.end)
-
-			confirmListFilterRange(t, testCase.expected, rangeLimitedList)
-		})
-
-		t.Run("iterate from left-pushed list "+name, func(t *testing.T) {
-			xs := make([]string, len(testCase.storedList))
-			copy(xs, testCase.storedList)
-			slices.Reverse(xs)
-
-			leftPushedList, _ := list.LeftPush(xs, nil)
-			rangeLimitedList := leftPushedList.Filter(testCase.start, testCase.end)
-
 			confirmListFilterRange(t, testCase.expected, rangeLimitedList)
 		})
 	}
@@ -138,22 +120,12 @@ func TestReadRangeFromStoreList(t *testing.T) {
 		pushedList, _ := list.LeftPush([]string{"1", "2", "3"}, nil)
 		pushedList, _ = list.RightPush([]string{"a", "b", "c", "d", "e"}, pushedList)
 
-		values, ok := list.ReadRangeFromStoreList(pushedList, 4, 6)
-
-		assert.True(t, ok, "should be ok")
-		assert.Equal(t, []string{"b", "c", "d"}, values)
-
 		confirmListFilterRange(t, []string{"b", "c", "d"}, pushedList.Filter(4, 6))
 	})
 
 	t.Run("range from left and right pushed list with values that straddle both lists", func(t *testing.T) {
 		pushedList, _ := list.LeftPush([]string{"1", "2", "3"}, nil)
 		pushedList, _ = list.RightPush([]string{"a", "b", "c", "d", "e"}, pushedList)
-
-		values, ok := list.ReadRangeFromStoreList(pushedList, 1, 4)
-
-		assert.True(t, ok, "should be ok")
-		assert.Equal(t, []string{"2", "1", "a", "b"}, values)
 
 		confirmListFilterRange(t, []string{"2", "1", "a", "b"}, pushedList.Filter(1, 4))
 	})
